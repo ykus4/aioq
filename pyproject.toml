@@ -25,9 +25,13 @@ postgres = [
 cron = [
     "croniter>=2.0",
 ]
+prometheus = [
+    "prometheus-client>=0.20",
+]
 all = [
     "asyncpg>=0.29",
     "croniter>=2.0",
+    "prometheus-client>=0.20",
 ]
 dev = [
     "pytest>=8.0",
@@ -38,6 +42,7 @@ dev = [
     "asyncpg>=0.29",
     "croniter>=2.0",
     "pre-commit>=3.7",
+    "prometheus-client>=0.20",
 ]
 docs = [
     "mkdocs>=1.6",

@@ -23,6 +23,7 @@ from .base import BaseBroker
 #     status        TEXT NOT NULL DEFAULT 'pending'
 #     args          JSONB NOT NULL DEFAULT '[]'
 #     kwargs        JSONB NOT NULL DEFAULT '{}'
+#     depends_on    JSONB NOT NULL DEFAULT '[]'
 #     retries       INT NOT NULL DEFAULT 0
 #     max_retries   INT NOT NULL DEFAULT 0
 #     retry_delay   FLOAT NOT NULL DEFAULT 0
@@ -49,6 +50,7 @@ CREATE TABLE IF NOT EXISTS aioq_jobs (
     status        TEXT NOT NULL DEFAULT 'pending',
     args          JSONB NOT NULL DEFAULT '[]',
     kwargs        JSONB NOT NULL DEFAULT '{}',
+    depends_on    JSONB NOT NULL DEFAULT '[]',
     retries       INT NOT NULL DEFAULT 0,
     max_retries   INT NOT NULL DEFAULT 0,
     retry_delay   FLOAT NOT NULL DEFAULT 0,
@@ -57,10 +59,9 @@ CREATE TABLE IF NOT EXISTS aioq_jobs (
     completed_at  TIMESTAMPTZ,
     run_at        TIMESTAMPTZ,
     result        JSONB,
-    error             TEXT,
-    worker_id         TEXT,
-    save_result       BOOLEAN NOT NULL DEFAULT FALSE,
-    dead_letter_queue TEXT
+    error         TEXT,
+    worker_id     TEXT,
+    save_result   BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS aioq_jobs_queue_status ON aioq_jobs (queue, status);
@@ -107,18 +108,33 @@ class PostgresBroker(BaseBroker):
     # ------------------------------------------------------------------
 
     async def enqueue(self, job: Job) -> None:
+        # Determine initial status based on dependencies
+        if job.depends_on:
+            async with self.pool.acquire() as conn:
+                all_completed = True
+                for dep_id in job.depends_on:
+                    row = await conn.fetchrow(
+                        "SELECT status FROM aioq_jobs WHERE id = $1", dep_id
+                    )
+                    if row is None or row["status"] != JobStatus.completed.value:
+                        all_completed = False
+                        break
+            if not all_completed:
+                job.status = JobStatus.waiting
+
         async with self.pool.acquire() as conn:
             await conn.execute(
                 """
                 INSERT INTO aioq_jobs
-                    (id, task_name, queue, status, args, kwargs,
+                    (id, task_name, queue, status, args, kwargs, depends_on,
                      retries, max_retries, retry_delay,
-                     enqueued_at, run_at, save_result, dead_letter_queue)
+                     enqueued_at, run_at, save_result)
                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
                 ON CONFLICT (id) DO UPDATE SET
                     status = EXCLUDED.status,
                     retries = EXCLUDED.retries,
-                    run_at = EXCLUDED.run_at
+                    run_at = EXCLUDED.run_at,
+                    depends_on = EXCLUDED.depends_on
                 """,
                 job.id,
                 job.task_name,
@@ -126,50 +142,13 @@ class PostgresBroker(BaseBroker):
                 job.status.value,
                 json.dumps(job.args),
                 json.dumps(job.kwargs),
+                json.dumps(job.depends_on),
                 job.retries,
                 job.max_retries,
                 job.retry_delay,
                 job.enqueued_at,
                 job.run_at,
                 job.save_result,
-                job.dead_letter_queue,
-            )
-
-    async def enqueue_many(self, jobs: list[Job]) -> None:
-        """Enqueue multiple jobs using a single executemany call."""
-        if not jobs:
-            return
-        rows = [
-            (
-                job.id,
-                job.task_name,
-                job.queue,
-                job.status.value,
-                json.dumps(job.args),
-                json.dumps(job.kwargs),
-                job.retries,
-                job.max_retries,
-                job.retry_delay,
-                job.enqueued_at,
-                job.run_at,
-                job.save_result,
-            )
-            for job in jobs
-        ]
-        async with self.pool.acquire() as conn:
-            await conn.executemany(
-                """
-                INSERT INTO aioq_jobs
-                    (id, task_name, queue, status, args, kwargs,
-                     retries, max_retries, retry_delay,
-                     enqueued_at, run_at, save_result)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-                ON CONFLICT (id) DO UPDATE SET
-                    status = EXCLUDED.status,
-                    retries = EXCLUDED.retries,
-                    run_at = EXCLUDED.run_at
-                """,
-                rows,
             )
 
     async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None:
@@ -215,18 +194,16 @@ class PostgresBroker(BaseBroker):
             await conn.execute(
                 """
                 UPDATE aioq_jobs SET
-                    queue        = $2,
-                    status       = $3,
-                    retries      = $4,
-                    started_at   = $5,
-                    completed_at = $6,
-                    result       = $7,
-                    error        = $8,
-                    worker_id    = $9
+                    status       = $2,
+                    retries      = $3,
+                    started_at   = $4,
+                    completed_at = $5,
+                    result       = $6,
+                    error        = $7,
+                    worker_id    = $8
                 WHERE id = $1
                 """,
                 job.id,
-                job.queue,
                 job.status.value,
                 job.retries,
                 job.started_at,
@@ -235,6 +212,37 @@ class PostgresBroker(BaseBroker):
                 job.error,
                 job.worker_id,
             )
+
+        # After completing a job, check if any dependent waiting jobs are now ready
+        if job.status == JobStatus.completed:
+            async with self.pool.acquire() as conn:
+                waiting_rows = await conn.fetch(
+                    """
+                    SELECT id, depends_on FROM aioq_jobs
+                    WHERE depends_on @> $1::jsonb AND status = 'waiting'
+                    """,
+                    json.dumps([job.id]),
+                )
+
+            for row in waiting_rows:
+                dep_job_id = row["id"]
+                dep_ids = json.loads(row["depends_on"])
+                all_done = True
+                async with self.pool.acquire() as conn:
+                    for dep_id in dep_ids:
+                        dep_row = await conn.fetchrow(
+                            "SELECT status FROM aioq_jobs WHERE id = $1", dep_id
+                        )
+                        if dep_row is None or dep_row["status"] != JobStatus.completed.value:
+                            all_done = False
+                            break
+
+                if all_done:
+                    async with self.pool.acquire() as conn:
+                        await conn.execute(
+                            "UPDATE aioq_jobs SET status = 'pending' WHERE id = $1 AND status = 'waiting'",
+                            dep_job_id,
+                        )
 
     async def retry_job(self, job_id: str) -> bool:
         async with self.pool.acquire() as conn:
@@ -259,7 +267,7 @@ class PostgresBroker(BaseBroker):
             result = await conn.execute(
                 """
                 UPDATE aioq_jobs SET status = 'cancelled'
-                WHERE id = $1 AND status IN ('pending', 'retrying')
+                WHERE id = $1 AND status IN ('pending', 'retrying', 'waiting')
                 """,
                 job_id,
             )
@@ -371,6 +379,7 @@ class PostgresBroker(BaseBroker):
             status=JobStatus(row["status"]),
             args=json.loads(row["args"]),
             kwargs=json.loads(row["kwargs"]),
+            depends_on=json.loads(row["depends_on"]) if row["depends_on"] else [],
             retries=row["retries"],
             max_retries=row["max_retries"],
             retry_delay=row["retry_delay"],
@@ -382,5 +391,4 @@ class PostgresBroker(BaseBroker):
             error=row["error"],
             worker_id=row["worker_id"],
             save_result=row["save_result"],
-            dead_letter_queue=row["dead_letter_queue"],
         )
