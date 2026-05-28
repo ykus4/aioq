@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Jobs</h1>
+  <p>Browse and filter enqueued jobs</p>
+</div>
+
+<!-- Filter bar -->
+<form class="filter-bar" method="get" action="/jobs">
+  <select name="queue" onchange="this.form.submit()">
+    <option value="">All queues</option>
+    {% for q in stats.keys() %}
+      <option value="{{ q }}" {% if current_queue == q %}selected{% endif %}>{{ q }}</option>
+    {% endfor %}
+  </select>
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    {% for s in statuses %}
+      <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Task</th>
+        <th>Queue</th>
+        <th>Status</th>
+        <th>Retries</th>
+        <th>Enqueued</th>
+        <th>Duration</th>
+        <th>Error</th>
+      </tr>
+    </thead>
+    <tbody id="job-rows"
+           hx-get="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page }}"
+           hx-trigger="every 5s"
+           hx-target="#job-rows"
+           hx-swap="innerHTML"
+           hx-select="#job-rows">
+      {% include "_job_rows.html" %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+  {% if page > 1 %}
+  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page - 1 }}" style="padding:0.3rem 0.75rem; background:#1e293b; border-radius:6px; font-size:0.85rem;">← Prev</a>
+  {% endif %}
+  <span style="color:#64748b; font-size:0.85rem;">Page {{ page }}</span>
+  {% if jobs|length == per_page %}
+  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page + 1 }}" style="padding:0.3rem 0.75rem; background:#1e293b; border-radius:6px; font-size:0.85rem;">Next →</a>
+  {% endif %}
+</div>
+{% endblock %}

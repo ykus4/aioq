@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <a href="/jobs" style="font-size:0.85rem; color:#64748b;">← Back to Jobs</a>
+  <h1 style="margin-top:0.5rem;">Job Detail</h1>
+</div>
+
+{% if job %}
+
+<!-- Action buttons -->
+{% set s = job.status.value %}
+{% if s in ("pending", "retrying") or s in ("failed", "cancelled") %}
+<div style="margin-bottom:1.25rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+  {% if s in ("pending", "retrying") %}
+  <button
+    hx-post="/api/jobs/{{ job.id }}/cancel"
+    hx-confirm="Cancel this job?"
+    hx-swap="none"
+    hx-on::after-request="if(event.detail.successful) window.location.reload()"
+    style="background:#7f1d1d33; color:#fca5a5; border:1px solid #7f1d1d; border-radius:6px; padding:0.45rem 1rem; font-size:0.875rem; cursor:pointer;">
+    Cancel
+  </button>
+  {% endif %}
+  {% if s in ("failed", "cancelled") %}
+  <button
+    hx-post="/api/jobs/{{ job.id }}/retry"
+    hx-confirm="Re-enqueue this job from scratch?"
+    hx-swap="none"
+    hx-on::after-request="if(event.detail.successful) window.location.reload()"
+    style="background:#15803d33; color:#86efac; border:1px solid #15803d; border-radius:6px; padding:0.45rem 1rem; font-size:0.875rem; cursor:pointer;">
+    Retry
+  </button>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Error banner for failed jobs -->
+{% if s == "failed" and job.error %}
+<div style="background:#7f1d1d22; border:1px solid #7f1d1d; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.25rem;">
+  <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#ef4444; margin-bottom:0.5rem; font-weight:600;">Error</div>
+  <pre style="color:#fca5a5; font-size:0.85rem; white-space:pre-wrap; word-break:break-all; margin:0;">{{ job.error }}</pre>
+</div>
+{% endif %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+  <div class="card">
+    <div class="card-title">Identity</div>
+    <table style="margin-top:0.5rem; width:100%;">
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0; width:120px; white-space:nowrap;">ID</td>
+        <td style="font-family:monospace; font-size:0.8rem; word-break:break-all;">{{ job.id }}</td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Task</td>
+        <td style="font-size:0.85rem; word-break:break-all;">{{ job.task_name }}</td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Queue</td>
+        <td>{{ job.queue }}</td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Status</td>
+        <td><span class="badge badge-{{ s }}">{{ s }}</span></td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Worker</td>
+        <td style="font-family:monospace; font-size:0.8rem; word-break:break-all;">{{ job.worker_id or "—" }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Timing</div>
+    <table style="margin-top:0.5rem; width:100%;">
+      {% if job.started_at and job.completed_at %}
+        {% set dur = (job.completed_at - job.started_at).total_seconds() %}
+      {% else %}
+        {% set dur = None %}
+      {% endif %}
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0; width:120px;">Enqueued</td>
+        <td style="font-size:0.83rem;">{{ job.enqueued_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Started</td>
+        <td style="font-size:0.83rem;">{{ job.started_at.strftime("%Y-%m-%d %H:%M:%S") if job.started_at else "—" }}</td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Completed</td>
+        <td style="font-size:0.83rem;">{{ job.completed_at.strftime("%Y-%m-%d %H:%M:%S") if job.completed_at else "—" }}</td>
+      </tr>
+      {% if dur is not none %}
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Duration</td>
+        <td style="font-size:0.83rem;">{{ "%.3f"|format(dur) }}s</td>
+      </tr>
+      {% endif %}
+      {% if job.run_at %}
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Run at</td>
+        <td style="font-size:0.83rem;">{{ job.run_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td style="color:#64748b; padding:0.3rem 0.5rem 0.3rem 0;">Retries</td>
+        <td>
+          {{ job.retries }} / {{ job.max_retries }}
+          {% if job.max_retries > 0 %}
+            <span style="margin-left:0.5rem;">
+              {% for i in range(job.max_retries) %}
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:2px;
+                  background: {% if i < job.retries %}#f59e0b{% else %}#334155{% endif %};">
+                </span>
+              {% endfor %}
+            </span>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem;">
+  <div class="card">
+    <div class="card-title">Arguments</div>
+    {% if job.args or job.kwargs %}
+    <pre style="margin-top:0.5rem; font-size:0.82rem; color:#cbd5e1; white-space:pre-wrap; word-break:break-all; line-height:1.6;">{% if job.args %}args:
+{{ job.args | tojson(indent=2) }}
+{% endif %}{% if job.kwargs %}kwargs:
+{{ job.kwargs | tojson(indent=2) }}{% endif %}</pre>
+    {% else %}
+    <p style="color:#64748b; margin-top:0.5rem; font-size:0.85rem;">No arguments.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Result</div>
+    {% if job.result is not none %}
+      <pre style="margin-top:0.5rem; color:#86efac; font-size:0.82rem; white-space:pre-wrap; word-break:break-all; line-height:1.6;">{{ job.result | tojson(indent=2) }}</pre>
+    {% elif s == "completed" %}
+      <p style="color:#64748b; margin-top:0.5rem; font-size:0.85rem;">Completed — result not saved.<br><span style="font-size:0.8rem;">(use <code style="color:#94a3b8;">save_result=True</code> on the task)</span></p>
+    {% else %}
+      <p style="color:#64748b; margin-top:0.5rem; font-size:0.85rem;">—</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Auto-refresh while active -->
+{% if s in ("pending", "running", "retrying") %}
+<div hx-get="/jobs/{{ job.id }}"
+     hx-trigger="every 3s"
+     hx-target="body"
+     hx-swap="innerHTML"
+     style="display:none">
+</div>
+{% endif %}
+
+{% else %}
+  <div class="card"><p style="color:#64748b;">Job not found.</p></div>
+{% endif %}
+
+{% endblock %}
