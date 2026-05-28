@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class JobStatus(StrEnum):
     pending = "pending"
+    waiting = "waiting"
     running = "running"
     completed = "completed"
     failed = "failed"
@@ -38,6 +39,7 @@ class Job(BaseModel):
     worker_id: str | None = None
     save_result: bool = False
     dead_letter_queue: str | None = None
+    depends_on: list[str] = Field(default_factory=list)
 
     def model_dump_json_safe(self) -> dict[str, Any]:
         d = self.model_dump()

@@ -10,12 +10,14 @@ from ..models import Job, JobStatus
 from .base import BaseBroker
 
 # Redis key schema:
-#   aioq:queue:{queue}:p{priority}:pending  - LIST  (LPUSH / BRPOP), priority tiers: 0, 5, 10
-#   aioq:job:{id}                  - HASH  (job data as JSON string in field "data")
-#   aioq:jobs:all                  - SET   (all job ids)
-#   aioq:jobs:status:{status}      - SET   (job ids by status)
-#   aioq:jobs:queue:{queue}        - SET   (job ids by queue)
-#   aioq:workers                   - HASH  (worker_id -> JSON info)
+#   aioq:queue:{queue}:p{0|5|10}:pending  - LIST  (LPUSH / BRPOP), priority tiers
+#   aioq:queue:{queue}:deferred            - Sorted Set (deferred job IDs, score=timestamp)
+#   aioq:job:{id}                          - String (job data as JSON)
+#   aioq:jobs:all                          - SET   (all job ids)
+#   aioq:jobs:status:{status}              - SET   (job ids by status)
+#   aioq:jobs:queue:{queue}                - SET   (job ids by queue)
+#   aioq:job:{id}:dependents               - SET   (job ids waiting on this job)
+#   aioq:workers                           - HASH  (worker_id -> JSON info)
 
 _PREFIX = "aioq"
 
@@ -63,6 +65,10 @@ def _queue_set(queue: str) -> str:
     return f"{_PREFIX}:jobs:queue:{queue}"
 
 
+def _dependents_key(job_id: str) -> str:
+    return f"{_PREFIX}:job:{job_id}:dependents"
+
+
 _WORKERS_KEY = f"{_PREFIX}:workers"
 _WORKER_TTL = 30  # seconds; heartbeat must be sent more frequently
 
@@ -91,26 +97,40 @@ class RedisBroker(BaseBroker):
     # ------------------------------------------------------------------
 
     async def enqueue(self, job: Job) -> None:
-        data = json.dumps(job.model_dump_json_safe())
+        # Check dependencies: if any dep is not yet completed, store as waiting
+        if job.depends_on:
+            all_completed = True
+            for dep_id in job.depends_on:
+                dep = await self.get_job(dep_id)
+                if dep is None or dep.status != JobStatus.completed:
+                    all_completed = False
+                    break
+            if not all_completed:
+                job.status = JobStatus.waiting
+
         pipe = self.redis.pipeline()
+        data = json.dumps(job.model_dump_json_safe())
         pipe.set(_job_key(job.id), data)
         pipe.sadd(f"{_PREFIX}:jobs:all", job.id)
         pipe.sadd(_status_set(job.status), job.id)
         pipe.sadd(_queue_set(job.queue), job.id)
 
-        if job.run_at and job.run_at > datetime.now(UTC):
-            # deferred: store in a sorted set with score = unix timestamp
-            score = job.run_at.timestamp()
-            pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
-        else:
-            pipe.lpush(_queue_key(job.queue, job.priority), job.id)
+        # Register this job as a dependent of each dep it's waiting on
+        for dep_id in job.depends_on:
+            pipe.sadd(_dependents_key(dep_id), job.id)
+
+        if job.status != JobStatus.waiting:
+            if job.run_at and job.run_at > datetime.now(UTC):
+                score = job.run_at.timestamp()
+                pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
+            else:
+                pipe.lpush(_queue_key(job.queue, job.priority), job.id)
 
         await pipe.execute()
 
     async def _promote_deferred(self, queue: str, now: float) -> None:
         """Move due deferred jobs into the pending list using a Lua script for atomicity."""
         deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
-        # Promote into the normal (p0) pending list; priority was set at enqueue time
         pending_key = _queue_key(queue, 0)
         await self.redis.eval(  # type: ignore[attr-defined]
             _PROMOTE_DEFERRED_LUA,
@@ -160,9 +180,43 @@ class RedisBroker(BaseBroker):
             if old.status != job.status:
                 pipe.srem(_status_set(old.status), job.id)
                 pipe.sadd(_status_set(job.status), job.id)
+            # Track queue membership change (e.g. when job moves to DLQ)
+            if old.queue != job.queue:
+                pipe.srem(_queue_set(old.queue), job.id)
+                pipe.sadd(_queue_set(job.queue), job.id)
 
         data = json.dumps(job.model_dump_json_safe())
         pipe.set(_job_key(job.id), data)
+        await pipe.execute()
+
+        # When a job completes, check if any dependent jobs are now ready
+        if job.status == JobStatus.completed:
+            dep_ids = await self.redis.smembers(_dependents_key(job.id))
+            for dep_id in dep_ids:
+                await self._check_and_enqueue_if_ready(dep_id)
+
+    async def _check_and_enqueue_if_ready(self, job_id: str) -> None:
+        """Promote a waiting job to pending if all its dependencies are completed."""
+        raw = await self.redis.get(_job_key(job_id))
+        if raw is None:
+            return
+        job = self._deserialize(raw)
+        if job.status != JobStatus.waiting:
+            return
+
+        for dep_id in job.depends_on:
+            dep = await self.get_job(dep_id)
+            if dep is None or dep.status != JobStatus.completed:
+                return  # still waiting
+
+        # All deps completed — promote to pending
+        pipe = self.redis.pipeline()
+        pipe.srem(_status_set(JobStatus.waiting), job_id)
+        pipe.sadd(_status_set(JobStatus.pending), job_id)
+        job.status = JobStatus.pending
+        data = json.dumps(job.model_dump_json_safe())
+        pipe.set(_job_key(job_id), data)
+        pipe.lpush(_queue_key(job.queue, job.priority), job_id)
         await pipe.execute()
 
     async def retry_job(self, job_id: str) -> bool:
@@ -172,7 +226,6 @@ class RedisBroker(BaseBroker):
         job = self._deserialize(raw)
         if job.status not in (JobStatus.failed, JobStatus.cancelled):
             return False
-        # Reset to a fresh pending state
         job.status = JobStatus.pending
         job.retries = 0
         job.error = None
@@ -189,7 +242,7 @@ class RedisBroker(BaseBroker):
         if not raw:
             return False
         job = self._deserialize(raw)
-        if job.status not in (JobStatus.pending, JobStatus.retrying):
+        if job.status not in (JobStatus.pending, JobStatus.retrying, JobStatus.waiting):
             return False
         job.status = JobStatus.cancelled
         await self.update_job(job)
@@ -245,7 +298,6 @@ class RedisBroker(BaseBroker):
         queues = [key.split(":")[-1] for key in queue_keys]
         statuses = list(JobStatus)
 
-        # Single pipeline round-trip: one SINTERCARD per (queue, status) pair
         pipe = self.redis.pipeline(transaction=False)
         for queue in queues:
             for status in statuses:
