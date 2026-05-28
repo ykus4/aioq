@@ -57,9 +57,10 @@ CREATE TABLE IF NOT EXISTS aioq_jobs (
     completed_at  TIMESTAMPTZ,
     run_at        TIMESTAMPTZ,
     result        JSONB,
-    error         TEXT,
-    worker_id     TEXT,
-    save_result   BOOLEAN NOT NULL DEFAULT FALSE
+    error             TEXT,
+    worker_id         TEXT,
+    save_result       BOOLEAN NOT NULL DEFAULT FALSE,
+    dead_letter_queue TEXT
 );
 
 CREATE INDEX IF NOT EXISTS aioq_jobs_queue_status ON aioq_jobs (queue, status);
@@ -112,8 +113,8 @@ class PostgresBroker(BaseBroker):
                 INSERT INTO aioq_jobs
                     (id, task_name, queue, status, args, kwargs,
                      retries, max_retries, retry_delay,
-                     enqueued_at, run_at, save_result)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                     enqueued_at, run_at, save_result, dead_letter_queue)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
                 ON CONFLICT (id) DO UPDATE SET
                     status = EXCLUDED.status,
                     retries = EXCLUDED.retries,
@@ -131,6 +132,44 @@ class PostgresBroker(BaseBroker):
                 job.enqueued_at,
                 job.run_at,
                 job.save_result,
+                job.dead_letter_queue,
+            )
+
+    async def enqueue_many(self, jobs: list[Job]) -> None:
+        """Enqueue multiple jobs using a single executemany call."""
+        if not jobs:
+            return
+        rows = [
+            (
+                job.id,
+                job.task_name,
+                job.queue,
+                job.status.value,
+                json.dumps(job.args),
+                json.dumps(job.kwargs),
+                job.retries,
+                job.max_retries,
+                job.retry_delay,
+                job.enqueued_at,
+                job.run_at,
+                job.save_result,
+            )
+            for job in jobs
+        ]
+        async with self.pool.acquire() as conn:
+            await conn.executemany(
+                """
+                INSERT INTO aioq_jobs
+                    (id, task_name, queue, status, args, kwargs,
+                     retries, max_retries, retry_delay,
+                     enqueued_at, run_at, save_result)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                ON CONFLICT (id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    retries = EXCLUDED.retries,
+                    run_at = EXCLUDED.run_at
+                """,
+                rows,
             )
 
     async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None:
@@ -176,16 +215,18 @@ class PostgresBroker(BaseBroker):
             await conn.execute(
                 """
                 UPDATE aioq_jobs SET
-                    status       = $2,
-                    retries      = $3,
-                    started_at   = $4,
-                    completed_at = $5,
-                    result       = $6,
-                    error        = $7,
-                    worker_id    = $8
+                    queue        = $2,
+                    status       = $3,
+                    retries      = $4,
+                    started_at   = $5,
+                    completed_at = $6,
+                    result       = $7,
+                    error        = $8,
+                    worker_id    = $9
                 WHERE id = $1
                 """,
                 job.id,
+                job.queue,
                 job.status.value,
                 job.retries,
                 job.started_at,
@@ -341,4 +382,5 @@ class PostgresBroker(BaseBroker):
             error=row["error"],
             worker_id=row["worker_id"],
             save_result=row["save_result"],
+            dead_letter_queue=row["dead_letter_queue"],
         )

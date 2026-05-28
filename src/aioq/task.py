@@ -61,6 +61,48 @@ class TaskDef:
         await self.app.broker.enqueue(job)
         return job
 
+    async def enqueue_many(
+        self,
+        items: list[tuple | dict],
+        *,
+        defer_by: float | None = None,
+    ) -> list[Job]:
+        """Enqueue multiple calls to this task.
+
+        *items* is a list of kwargs dicts or positional-args tuples.
+        Returns the list of created :class:`Job` objects.
+        """
+        from datetime import timedelta
+
+        run_at: datetime | None = None
+        if defer_by is not None:
+            run_at = datetime.now(UTC) + timedelta(seconds=defer_by)
+
+        jobs: list[Job] = []
+        for item in items:
+            if isinstance(item, dict):
+                args_list: list[Any] = []
+                kwargs_map: dict[str, Any] = item
+            else:
+                args_list = list(item)
+                kwargs_map = {}
+
+            jobs.append(
+                Job(
+                    task_name=self.name,
+                    queue=self.queue,
+                    args=args_list,
+                    kwargs=kwargs_map,
+                    max_retries=self.retries,
+                    retry_delay=self.retry_delay,
+                    save_result=self.save_result,
+                    run_at=run_at,
+                )
+            )
+
+        await self.app.broker.enqueue_many(jobs)
+        return jobs
+
     async def __call__(self, ctx: dict, *args: Any, **kwargs: Any) -> Any:
         """Directly call the underlying function (used by worker)."""
         return await self.fn(ctx, *args, **kwargs)
