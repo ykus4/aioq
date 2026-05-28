@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import fakeredis.aioredis
 import pytest
-from src.aioq.backends.redis import RedisBroker
-from src.aioq.models import Job, JobStatus
+
+from aioq.backends.redis import RedisBroker
+from aioq.models import Job, JobStatus
 
 
 @pytest.fixture
@@ -79,8 +80,8 @@ async def test_task_def_enqueue_many(monkeypatch):
     fake = fakeredis.aioredis.FakeRedis(decode_responses=True)
     monkeypatch.setattr(aioredis, "from_url", lambda *a, **kw: fake)
 
-    from src.aioq.app import Aarq
-    from src.aioq.backends.redis import RedisBroker
+    from aioq.app import Aarq
+    from aioq.backends.redis import RedisBroker
 
     broker = RedisBroker()
     await broker.connect()

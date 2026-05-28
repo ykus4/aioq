@@ -2,8 +2,9 @@
 
 import fakeredis.aioredis
 import pytest
-from src.aioq.backends.redis import RedisBroker
-from src.aioq.models import Job
+
+from aioq.backends.redis import RedisBroker
+from aioq.models import Job
 
 
 @pytest.fixture

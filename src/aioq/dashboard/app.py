@@ -16,7 +16,7 @@ from ..models import JobStatus
 try:
     from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-    from ..metrics import get_collector, get_registry
+    from ..metrics import AioqCollector, make_registry
 
     _PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -26,11 +26,15 @@ _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
 
 
-def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
+def create_dashboard(app: Aarq) -> FastAPI:
     """Create and return a FastAPI app serving the aioq dashboard."""
 
     dashboard = FastAPI(title="aioq dashboard")
     templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
+
+    if _PROMETHEUS_AVAILABLE:
+        _collector = AioqCollector()
+        _registry = make_registry(_collector)
 
     if _STATIC_DIR.exists():
         dashboard.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
@@ -169,9 +173,8 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
         if not _PROMETHEUS_AVAILABLE:
             raise HTTPException(status_code=501, detail="prometheus-client not installed")
 
-        collector = get_collector()
-        await collector.update(app.broker)
-        output = generate_latest(get_registry())
+        await _collector.update(app.broker)
+        output = generate_latest(_registry)
         return Response(content=output, media_type=CONTENT_TYPE_LATEST)
 
     return dashboard
