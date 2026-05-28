@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     pending = "pending"
     running = "running"
     completed = "completed"
@@ -27,7 +27,7 @@ class Job(BaseModel):
     retries: int = 0
     max_retries: int = 0
     retry_delay: float = 0.0
-    enqueued_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    enqueued_at: datetime = Field(default_factory=lambda: datetime.now(UTC).replace(tzinfo=None))
     started_at: datetime | None = None
     completed_at: datetime | None = None
     run_at: datetime | None = None  # for deferred jobs

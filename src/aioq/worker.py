@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import signal
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from .app import Aarq
@@ -78,10 +79,8 @@ class Worker:
     async def _heartbeat_loop(self) -> None:
         while True:
             await asyncio.sleep(self.heartbeat_interval)
-            try:
+            with contextlib.suppress(Exception):
                 await self.app.broker.heartbeat_worker(self.worker_id)
-            except Exception:
-                pass
 
     async def _cron_loop(self) -> None:
         """Fire cron tasks at their scheduled times."""
@@ -118,12 +117,12 @@ class Worker:
             logger.error("Unknown task: %s — marking as failed", job.task_name)
             job.status = JobStatus.failed
             job.error = f"Unknown task: {job.task_name}"
-            job.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            job.completed_at = datetime.now(UTC).replace(tzinfo=None)
             await self.app.broker.update_job(job)
             return
 
         job.status = JobStatus.running
-        job.started_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        job.started_at = datetime.now(UTC).replace(tzinfo=None)
         job.worker_id = self.worker_id
         await self.app.broker.update_job(job)
 
@@ -142,7 +141,7 @@ class Worker:
         try:
             result = await task_def(ctx, *job.args, **job.kwargs)
             job.status = JobStatus.completed
-            job.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            job.completed_at = datetime.now(UTC).replace(tzinfo=None)
             if job.save_result:
                 job.result = result
             await self.app.broker.update_job(job)
@@ -167,5 +166,5 @@ class Worker:
             else:
                 job.status = JobStatus.failed
                 job.error = str(exc)
-                job.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+                job.completed_at = datetime.now(UTC).replace(tzinfo=None)
                 await self.app.broker.update_job(job)

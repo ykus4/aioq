@@ -9,6 +9,7 @@ Run dashboard:
 Enqueue jobs:
     python example.py enqueue
 """
+
 from __future__ import annotations
 
 import asyncio
