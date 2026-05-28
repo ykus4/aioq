@@ -3,6 +3,7 @@
 Usage:
     uv run python demo/enqueue.py
 """
+
 import asyncio
 
 from demo.tasks import add, broker, flaky_task, urgent

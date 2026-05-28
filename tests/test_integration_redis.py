@@ -6,6 +6,7 @@ Run with:
 These tests are skipped automatically if no Redis is reachable at REDIS_URL.
 In CI the redis service is mapped to port 6380.
 """
+
 from __future__ import annotations
 
 import asyncio
