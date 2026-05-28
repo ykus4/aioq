@@ -14,7 +14,7 @@ Async job queue for Python with Redis, PostgreSQL, and MySQL backends, priority 
 - **Deferred jobs** — `defer_by=60` or `defer_until=datetime(...)`
 - **Cron scheduling** — standard cron expressions
 - **Prometheus metrics** — `/metrics` endpoint for Grafana integration
-- **Built-in dashboard** — real-time queue stats, job browser, retry/cancel
+- **Built-in dashboard** — real-time queue stats, job browser, retry/cancel/replay
 
 ## Install
 
@@ -37,6 +37,10 @@ app = Aarq(broker=RedisBroker())
 @app.task(queue="default", retries=3, priority=5, dead_letter_queue="dlq")
 async def send_email(ctx, to: str, subject: str) -> dict:
     ...
+
+# Enqueue with dependencies — job_b runs only after job_a completes
+job_a = await send_email.enqueue(to="a@example.com", subject="Hi")
+job_b = await send_email.enqueue(to="b@example.com", subject="Hi", depends_on=[job_a.id])
 ```
 
 ```bash
