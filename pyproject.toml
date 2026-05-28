@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aioq"
-version = "0.3.0"
+version = "0.4.0"
 description = "Async job queue with multiple backend support and built-in dashboard"
 readme = "README.md"
 requires-python = ">=3.11"
