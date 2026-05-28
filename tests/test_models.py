@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from src.aioq.models import Job, JobStatus
 
 

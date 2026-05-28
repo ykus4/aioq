@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 import redis.asyncio as aioredis
 
@@ -57,7 +56,7 @@ class RedisBroker(BaseBroker):
 
     async def disconnect(self) -> None:
         if self._redis:
-            await self._redis.aclose()
+            await self._redis.aclose()  # type: ignore[attr-defined]
             self._redis = None
 
     # ------------------------------------------------------------------
@@ -72,7 +71,7 @@ class RedisBroker(BaseBroker):
         pipe.sadd(_status_set(job.status), job.id)
         pipe.sadd(_queue_set(job.queue), job.id)
 
-        if job.run_at and job.run_at > datetime.now(timezone.utc).replace(tzinfo=None):
+        if job.run_at and job.run_at > datetime.now(UTC).replace(tzinfo=None):
             # deferred: store in a sorted set with score = unix timestamp
             score = job.run_at.timestamp()
             pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
@@ -177,11 +176,11 @@ class RedisBroker(BaseBroker):
         else:
             ids = await self.redis.smembers(f"{_PREFIX}:jobs:all")
 
-        ids = list(ids)
-        ids = ids[offset : offset + limit]
+        job_ids: list[str] = [str(i) for i in ids]
+        job_ids = job_ids[offset : offset + limit]
 
         jobs = []
-        for job_id in ids:
+        for job_id in job_ids:
             raw = await self.redis.get(_job_key(job_id))
             if raw:
                 jobs.append(self._deserialize(raw))
@@ -201,9 +200,7 @@ class RedisBroker(BaseBroker):
             queue = key.split(":")[-1]
             stats[queue] = {}
             for status in JobStatus:
-                count = len(
-                    await self.redis.sinter(_queue_set(queue), _status_set(status))
-                )
+                count = len(await self.redis.sinter(_queue_set(queue), _status_set(status)))
                 if count > 0:
                     stats[queue][status.value] = count
 
@@ -217,8 +214,8 @@ class RedisBroker(BaseBroker):
         info = {
             "worker_id": worker_id,
             "queues": queues,
-            "registered_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
-            "last_heartbeat": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
+            "registered_at": datetime.now(UTC).replace(tzinfo=None).isoformat(),
+            "last_heartbeat": datetime.now(UTC).replace(tzinfo=None).isoformat(),
         }
         await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
         await self.redis.expire(_WORKERS_KEY, _WORKER_TTL * 10)
@@ -227,7 +224,7 @@ class RedisBroker(BaseBroker):
         raw = await self.redis.hget(_WORKERS_KEY, worker_id)
         if raw:
             info = json.loads(raw)
-            info["last_heartbeat"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+            info["last_heartbeat"] = datetime.now(UTC).replace(tzinfo=None).isoformat()
             await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
 
     async def deregister_worker(self, worker_id: str) -> None:
@@ -237,7 +234,7 @@ class RedisBroker(BaseBroker):
         raw_map = await self.redis.hgetall(_WORKERS_KEY)
         workers = []
         cutoff = time.time() - _WORKER_TTL
-        for worker_id, raw in raw_map.items():
+        for _worker_id, raw in raw_map.items():
             info = json.loads(raw)
             hb = datetime.fromisoformat(info["last_heartbeat"]).timestamp()
             info["alive"] = hb > cutoff

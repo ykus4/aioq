@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from .backends.base import BaseBroker
 from .task import TaskDef
+
+if TYPE_CHECKING:
+    from .cron import CronDef
 
 
 class Aarq:
@@ -12,7 +16,7 @@ class Aarq:
     def __init__(self, broker: BaseBroker):
         self.broker = broker
         self._tasks: dict[str, TaskDef] = {}
-        self._crons: list["CronDef"] = []  # noqa: F821
+        self._crons: list[CronDef] = []
 
     def task(
         self,
@@ -33,6 +37,7 @@ class Aarq:
 
             job = await send_email.enqueue(user_id=42)
         """
+
         def decorator(fn: Callable) -> TaskDef:
             task_def = TaskDef(
                 fn=fn,
@@ -63,8 +68,10 @@ class Aarq:
             async def cleanup(ctx):
                 ...
         """
-        def decorator(fn: Callable) -> "CronDef":
+
+        def decorator(fn: Callable) -> Callable:
             from .cron import CronDef
+
             cron_def = CronDef(fn=fn, app=self, expression=expression, queue=queue, name=name)
             self._crons.append(cron_def)
             return cron_def

@@ -1,6 +1,5 @@
-import pytest
 import fakeredis.aioredis
-
+import pytest
 from src.aioq.backends.redis import RedisBroker
 from src.aioq.models import Job, JobStatus
 

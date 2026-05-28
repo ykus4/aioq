@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 try:
     from croniter import croniter
@@ -17,7 +18,7 @@ class CronDef:
     def __init__(
         self,
         fn: Callable,
-        app: "Aarq",
+        app: Aarq,
         expression: str,
         queue: str,
         name: str | None = None,

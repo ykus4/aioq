@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator
 
 from ..models import Job, JobStatus
 
@@ -69,7 +68,7 @@ class BaseBroker(ABC):
     @abstractmethod
     async def list_workers(self) -> list[dict]: ...
 
-    async def __aenter__(self) -> "BaseBroker":
+    async def __aenter__(self) -> BaseBroker:
         await self.connect()
         return self
 
