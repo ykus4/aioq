@@ -26,6 +26,7 @@ class Aarq:
         retry_delay: float = 5.0,
         save_result: bool = False,
         result_ttl: int = 3600,
+        dead_letter_queue: str | None = None,
     ) -> Callable:
         """Decorator to register an async function as a task.
 
@@ -47,6 +48,7 @@ class Aarq:
                 retry_delay=retry_delay,
                 save_result=save_result,
                 result_ttl=result_ttl,
+                dead_letter_queue=dead_letter_queue,
             )
             self._tasks[task_def.name] = task_def
             return task_def

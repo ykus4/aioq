@@ -22,6 +22,7 @@ class TaskDef:
         retry_delay: float,
         save_result: bool,
         result_ttl: int,
+        dead_letter_queue: str | None = None,
     ):
         self.fn = fn
         self.app = app
@@ -30,6 +31,7 @@ class TaskDef:
         self.retry_delay = retry_delay
         self.save_result = save_result
         self.result_ttl = result_ttl
+        self.dead_letter_queue = dead_letter_queue
         self.name = f"{fn.__module__}.{fn.__qualname__}"
         self.__doc__ = fn.__doc__
         self.__name__ = fn.__name__
@@ -57,6 +59,7 @@ class TaskDef:
             retry_delay=self.retry_delay,
             save_result=self.save_result,
             run_at=run_at,
+            dead_letter_queue=self.dead_letter_queue,
         )
         await self.app.broker.enqueue(job)
         return job

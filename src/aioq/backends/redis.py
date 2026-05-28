@@ -11,7 +11,7 @@ from .base import BaseBroker
 
 # Redis key schema:
 #   aioq:queue:{queue}:pending     - LIST  (LPUSH / BRPOP)
-#   aioq:job:{id}                  - HASH  (job data as JSON string in field "data")
+#   aioq:job:{id}                  - STRING (job data as JSON)
 #   aioq:jobs:all                  - SET   (all job ids)
 #   aioq:jobs:status:{status}      - SET   (job ids by status)
 #   aioq:jobs:queue:{queue}        - SET   (job ids by queue)
@@ -140,6 +140,9 @@ class RedisBroker(BaseBroker):
             if old.status != job.status:
                 pipe.srem(_status_set(old.status), job.id)
                 pipe.sadd(_status_set(job.status), job.id)
+            if old.queue != job.queue:
+                pipe.srem(_queue_set(old.queue), job.id)
+                pipe.sadd(_queue_set(job.queue), job.id)
 
         data = json.dumps(job.model_dump_json_safe())
         pipe.set(_job_key(job.id), data)
