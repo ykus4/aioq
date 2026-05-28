@@ -10,15 +10,27 @@ from ..models import Job, JobStatus
 from .base import BaseBroker
 
 # Redis key schema:
-#   aioq:queue:{queue}:pending     - LIST  (LPUSH / BRPOP)
+#   aioq:queue:{queue}:p{priority}:pending  - LIST  (LPUSH / BRPOP), priority tiers: 0, 5, 10
 #   aioq:job:{id}                  - HASH  (job data as JSON string in field "data")
 #   aioq:jobs:all                  - SET   (all job ids)
 #   aioq:jobs:status:{status}      - SET   (job ids by status)
 #   aioq:jobs:queue:{queue}        - SET   (job ids by queue)
 #   aioq:workers                   - HASH  (worker_id -> JSON info)
-#   aioq:job:{id}:dependents       - SET   (job ids that depend on this job)
 
 _PREFIX = "aioq"
+
+# Supported priority tiers (highest first for dequeue ordering)
+_PRIORITY_TIERS = [10, 5, 0]
+
+
+def _clamp_priority(priority: int) -> int:
+    """Snap a priority value to the nearest supported tier (0, 5, 10)."""
+    if priority <= 0:
+        return 0
+    if priority <= 5:
+        return 5
+    return 10
+
 
 # Lua script: atomically promote due deferred jobs to the pending list.
 # KEYS[1] = deferred sorted set, KEYS[2] = pending list
@@ -34,8 +46,9 @@ return #ids
 """
 
 
-def _queue_key(queue: str) -> str:
-    return f"{_PREFIX}:queue:{queue}:pending"
+def _queue_key(queue: str, priority: int = 0) -> str:
+    p = _clamp_priority(priority)
+    return f"{_PREFIX}:queue:{queue}:p{p}:pending"
 
 
 def _job_key(job_id: str) -> str:
@@ -90,33 +103,15 @@ class RedisBroker(BaseBroker):
             score = job.run_at.timestamp()
             pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
         else:
-            pipe.lpush(_queue_key(job.queue), job.id)
+            pipe.lpush(_queue_key(job.queue, job.priority), job.id)
 
-        await pipe.execute()
-
-    async def enqueue_many(self, jobs: list[Job]) -> None:
-        """Enqueue multiple jobs using a single pipeline round-trip."""
-        if not jobs:
-            return
-        pipe = self.redis.pipeline()
-        for job in jobs:
-            data = json.dumps(job.model_dump_json_safe())
-            pipe.set(_job_key(job.id), data)
-            pipe.sadd(f"{_PREFIX}:jobs:all", job.id)
-            pipe.sadd(_status_set(job.status), job.id)
-            pipe.sadd(_queue_set(job.queue), job.id)
-
-            if job.run_at and job.run_at > datetime.now(UTC):
-                score = job.run_at.timestamp()
-                pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
-            else:
-                pipe.lpush(_queue_key(job.queue), job.id)
         await pipe.execute()
 
     async def _promote_deferred(self, queue: str, now: float) -> None:
         """Move due deferred jobs into the pending list using a Lua script for atomicity."""
         deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
-        pending_key = _queue_key(queue)
+        # Promote into the normal (p0) pending list; priority was set at enqueue time
+        pending_key = _queue_key(queue, 0)
         await self.redis.eval(  # type: ignore[attr-defined]
             _PROMOTE_DEFERRED_LUA,
             2,
@@ -131,8 +126,13 @@ class RedisBroker(BaseBroker):
         for queue in queues:
             await self._promote_deferred(queue, now)
 
-        keys = [_queue_key(q) for q in queues]
-        result = await self.redis.brpop(keys, timeout=timeout)
+        # Build keys in priority order: p10, p5, p0 for each queue so that
+        # BRPOP naturally picks the highest-priority non-empty list first.
+        priority_keys = []
+        for q in queues:
+            for p in _PRIORITY_TIERS:
+                priority_keys.append(_queue_key(q, p))
+        result = await self.redis.brpop(priority_keys, timeout=timeout)
         if result is None:
             return None
 
@@ -148,7 +148,7 @@ class RedisBroker(BaseBroker):
 
     async def nack(self, job: Job, requeue: bool = False) -> None:
         if requeue:
-            await self.redis.lpush(_queue_key(job.queue), job.id)
+            await self.redis.lpush(_queue_key(job.queue, job.priority), job.id)
         await self.update_job(job)
 
     async def update_job(self, job: Job) -> None:
@@ -160,9 +160,6 @@ class RedisBroker(BaseBroker):
             if old.status != job.status:
                 pipe.srem(_status_set(old.status), job.id)
                 pipe.sadd(_status_set(job.status), job.id)
-            if old.queue != job.queue:
-                pipe.srem(_queue_set(old.queue), job.id)
-                pipe.sadd(_queue_set(job.queue), job.id)
 
         data = json.dumps(job.model_dump_json_safe())
         pipe.set(_job_key(job.id), data)
@@ -184,7 +181,7 @@ class RedisBroker(BaseBroker):
         job.completed_at = None
         job.worker_id = None
         await self.update_job(job)
-        await self.redis.lpush(_queue_key(job.queue), job.id)
+        await self.redis.lpush(_queue_key(job.queue, job.priority), job.id)
         return True
 
     async def cancel_job(self, job_id: str) -> bool:
