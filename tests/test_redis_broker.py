@@ -14,6 +14,12 @@ async def broker(monkeypatch):
 
     b = RedisBroker()
     await b.connect()
+
+    # fakeredis does not support Lua eval; stub out the deferred-promotion step
+    async def _noop_promote(queue: str, now: float) -> None:
+        pass
+
+    monkeypatch.setattr(b, "_promote_deferred", _noop_promote)
     yield b
     await b.disconnect()
 

@@ -19,6 +19,19 @@ from .base import BaseBroker
 
 _PREFIX = "aioq"
 
+# Lua script: atomically promote due deferred jobs to the pending list.
+# KEYS[1] = deferred sorted set, KEYS[2] = pending list
+# ARGV[1] = current unix timestamp (float as string)
+_PROMOTE_DEFERRED_LUA = """
+local ids = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1])
+if #ids == 0 then return 0 end
+redis.call('ZREM', KEYS[1], unpack(ids))
+for _, id in ipairs(ids) do
+    redis.call('LPUSH', KEYS[2], id)
+end
+return #ids
+"""
+
 
 def _queue_key(queue: str) -> str:
     return f"{_PREFIX}:queue:{queue}:pending"
@@ -71,7 +84,7 @@ class RedisBroker(BaseBroker):
         pipe.sadd(_status_set(job.status), job.id)
         pipe.sadd(_queue_set(job.queue), job.id)
 
-        if job.run_at and job.run_at > datetime.now(UTC).replace(tzinfo=None):
+        if job.run_at and job.run_at > datetime.now(UTC):
             # deferred: store in a sorted set with score = unix timestamp
             score = job.run_at.timestamp()
             pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
@@ -80,15 +93,23 @@ class RedisBroker(BaseBroker):
 
         await pipe.execute()
 
+    async def _promote_deferred(self, queue: str, now: float) -> None:
+        """Move due deferred jobs into the pending list using a Lua script for atomicity."""
+        deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
+        pending_key = _queue_key(queue)
+        await self.redis.eval(  # type: ignore[attr-defined]
+            _PROMOTE_DEFERRED_LUA,
+            2,
+            deferred_key,
+            pending_key,
+            now,
+        )
+
     async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None:
-        # First, promote any deferred jobs whose run_at has passed
+        # Promote any deferred jobs whose run_at has passed (atomic via Lua)
         now = time.time()
         for queue in queues:
-            deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
-            due_ids = await self.redis.zrangebyscore(deferred_key, "-inf", now)
-            for job_id in due_ids:
-                await self.redis.zrem(deferred_key, job_id)
-                await self.redis.lpush(_queue_key(queue), job_id)
+            await self._promote_deferred(queue, now)
 
         keys = [_queue_key(q) for q in queues]
         result = await self.redis.brpop(keys, timeout=timeout)
@@ -179,12 +200,16 @@ class RedisBroker(BaseBroker):
         job_ids: list[str] = [str(i) for i in ids]
         job_ids = job_ids[offset : offset + limit]
 
-        jobs = []
-        for job_id in job_ids:
-            raw = await self.redis.get(_job_key(job_id))
-            if raw:
-                jobs.append(self._deserialize(raw))
+        if not job_ids:
+            return []
 
+        # Fetch all job data in a single pipeline round-trip
+        pipe = self.redis.pipeline(transaction=False)
+        for job_id in job_ids:
+            pipe.get(_job_key(job_id))
+        raws = await pipe.execute()
+
+        jobs = [self._deserialize(raw) for raw in raws if raw]
         jobs.sort(key=lambda j: j.enqueued_at, reverse=True)
         return jobs
 
@@ -194,15 +219,28 @@ class RedisBroker(BaseBroker):
 
     async def queue_stats(self) -> dict[str, dict[str, int]]:
         queue_keys = await self.redis.keys(f"{_PREFIX}:jobs:queue:*")
-        stats: dict[str, dict[str, int]] = {}
+        if not queue_keys:
+            return {}
 
-        for key in queue_keys:
-            queue = key.split(":")[-1]
+        queues = [key.split(":")[-1] for key in queue_keys]
+        statuses = list(JobStatus)
+
+        # Single pipeline round-trip: one SINTERCARD per (queue, status) pair
+        pipe = self.redis.pipeline(transaction=False)
+        for queue in queues:
+            for status in statuses:
+                pipe.sintercard(2, [_queue_set(queue), _status_set(status)])
+        results = await pipe.execute()
+
+        stats: dict[str, dict[str, int]] = {}
+        idx = 0
+        for queue in queues:
             stats[queue] = {}
-            for status in JobStatus:
-                count = len(await self.redis.sinter(_queue_set(queue), _status_set(status)))
+            for status in statuses:
+                count = results[idx]
                 if count > 0:
                     stats[queue][status.value] = count
+                idx += 1
 
         return stats
 
@@ -214,8 +252,8 @@ class RedisBroker(BaseBroker):
         info = {
             "worker_id": worker_id,
             "queues": queues,
-            "registered_at": datetime.now(UTC).replace(tzinfo=None).isoformat(),
-            "last_heartbeat": datetime.now(UTC).replace(tzinfo=None).isoformat(),
+            "registered_at": datetime.now(UTC).isoformat(),
+            "last_heartbeat": datetime.now(UTC).isoformat(),
         }
         await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
         await self.redis.expire(_WORKERS_KEY, _WORKER_TTL * 10)
@@ -224,7 +262,7 @@ class RedisBroker(BaseBroker):
         raw = await self.redis.hget(_WORKERS_KEY, worker_id)
         if raw:
             info = json.loads(raw)
-            info["last_heartbeat"] = datetime.now(UTC).replace(tzinfo=None).isoformat()
+            info["last_heartbeat"] = datetime.now(UTC).isoformat()
             await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
 
     async def deregister_worker(self, worker_id: str) -> None:
