@@ -27,9 +27,7 @@ class Job(BaseModel):
     retries: int = 0
     max_retries: int = 0
     retry_delay: float = 0.0
-    enqueued_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC).replace(tzinfo=None)
-    )
+    enqueued_at: datetime = Field(default_factory=lambda: datetime.now(UTC).replace(tzinfo=None))
     started_at: datetime | None = None
     completed_at: datetime | None = None
     run_at: datetime | None = None  # for deferred jobs

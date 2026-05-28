@@ -66,9 +66,7 @@ class Worker:
             heartbeat_task.cancel()
             cron_task.cancel()
             if self._tasks:
-                logger.info(
-                    "Waiting for %d in-flight jobs to finish…", len(self._tasks)
-                )
+                logger.info("Waiting for %d in-flight jobs to finish…", len(self._tasks))
                 await asyncio.gather(*self._tasks, return_exceptions=True)
             await broker.deregister_worker(self.worker_id)
             await broker.disconnect()

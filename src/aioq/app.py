@@ -72,9 +72,7 @@ class Aarq:
         def decorator(fn: Callable) -> Callable:
             from .cron import CronDef
 
-            cron_def = CronDef(
-                fn=fn, app=self, expression=expression, queue=queue, name=name
-            )
+            cron_def = CronDef(fn=fn, app=self, expression=expression, queue=queue, name=name)
             self._crons.append(cron_def)
             return cron_def
 

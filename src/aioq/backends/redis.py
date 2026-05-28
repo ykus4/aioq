@@ -200,9 +200,7 @@ class RedisBroker(BaseBroker):
             queue = key.split(":")[-1]
             stats[queue] = {}
             for status in JobStatus:
-                count = len(
-                    await self.redis.sinter(_queue_set(queue), _status_set(status))
-                )
+                count = len(await self.redis.sinter(_queue_set(queue), _status_set(status)))
                 if count > 0:
                     stats[queue][status.value] = count
 
