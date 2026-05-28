@@ -1,0 +1,157 @@
+from __future__ import annotations
+
+import asyncio
+import json
+from pathlib import Path
+from typing import AsyncGenerator
+
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from ..app import Aarq
+from ..models import JobStatus
+
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_STATIC_DIR = Path(__file__).parent / "static"
+
+
+def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
+    """Create and return a FastAPI app serving the aioq dashboard."""
+
+    dashboard = FastAPI(title="aioq dashboard")
+    templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
+
+    if _STATIC_DIR.exists():
+        dashboard.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+    # ------------------------------------------------------------------
+    # Pages
+    # ------------------------------------------------------------------
+
+    @dashboard.get("/", response_class=HTMLResponse)
+    async def index(request: Request):
+        broker = app.broker
+        stats = await broker.queue_stats()
+        workers = await broker.list_workers()
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "stats": stats, "workers": workers},
+        )
+
+    @dashboard.get("/jobs", response_class=HTMLResponse)
+    async def jobs_page(
+        request: Request,
+        queue: str | None = None,
+        status: str | None = None,
+        page: int = 1,
+        per_page: int = 20,
+    ):
+        broker = app.broker
+        status_enum = JobStatus(status) if status else None
+        jobs = await broker.list_jobs(
+            queue=queue,
+            status=status_enum,
+            limit=per_page,
+            offset=(page - 1) * per_page,
+        )
+        stats = await broker.queue_stats()
+        return templates.TemplateResponse(
+            "jobs.html",
+            {
+                "request": request,
+                "jobs": jobs,
+                "stats": stats,
+                "current_queue": queue,
+                "current_status": status,
+                "page": page,
+                "per_page": per_page,
+                "statuses": [s.value for s in JobStatus],
+            },
+        )
+
+    @dashboard.get("/jobs/{job_id}", response_class=HTMLResponse)
+    async def job_detail(request: Request, job_id: str):
+        job = await app.broker.get_job(job_id)
+        return templates.TemplateResponse(
+            "job_detail.html",
+            {"request": request, "job": job},
+        )
+
+    # ------------------------------------------------------------------
+    # SSE — real-time stats push
+    # ------------------------------------------------------------------
+
+    @dashboard.get("/sse/stats")
+    async def sse_stats(request: Request) -> StreamingResponse:
+        async def event_generator() -> AsyncGenerator[str, None]:
+            while True:
+                if await request.is_disconnected():
+                    break
+                stats = await app.broker.queue_stats()
+                workers = await app.broker.list_workers()
+                payload = json.dumps({"stats": stats, "workers": workers})
+                yield f"data: {payload}\n\n"
+                await asyncio.sleep(2)
+
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    # ------------------------------------------------------------------
+    # REST API (for HTMX partial updates)
+    # ------------------------------------------------------------------
+
+    @dashboard.get("/api/stats")
+    async def api_stats():
+        stats = await app.broker.queue_stats()
+        workers = await app.broker.list_workers()
+        return {"stats": stats, "workers": workers}
+
+    @dashboard.get("/api/jobs")
+    async def api_jobs(
+        queue: str | None = None,
+        status: str | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ):
+        status_enum = JobStatus(status) if status else None
+        jobs = await app.broker.list_jobs(
+            queue=queue, status=status_enum, limit=limit, offset=offset
+        )
+        return [j.model_dump_json_safe() for j in jobs]
+
+    @dashboard.get("/api/jobs/{job_id}")
+    async def api_job(job_id: str):
+        job = await app.broker.get_job(job_id)
+        if job is None:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Job not found")
+        return job.model_dump_json_safe()
+
+    @dashboard.post("/api/jobs/{job_id}/cancel")
+    async def api_cancel_job(job_id: str):
+        from fastapi import HTTPException
+        cancelled = await app.broker.cancel_job(job_id)
+        if not cancelled:
+            raise HTTPException(
+                status_code=409,
+                detail="Job cannot be cancelled (not in pending/retrying state or not found)",
+            )
+        return {"cancelled": True, "job_id": job_id}
+
+    @dashboard.post("/api/jobs/{job_id}/retry")
+    async def api_retry_job(job_id: str):
+        from fastapi import HTTPException
+        retried = await app.broker.retry_job(job_id)
+        if not retried:
+            raise HTTPException(
+                status_code=409,
+                detail="Job cannot be retried (not in failed/cancelled state or not found)",
+            )
+        return {"retried": True, "job_id": job_id}
+
+    return dashboard

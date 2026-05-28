@@ -1,0 +1,257 @@
+from __future__ import annotations
+
+import json
+import time
+from datetime import datetime, timezone
+from typing import Any
+
+import redis.asyncio as aioredis
+
+from ..models import Job, JobStatus
+from .base import BaseBroker
+
+# Redis key schema:
+#   aioq:queue:{queue}:pending     - LIST  (LPUSH / BRPOP)
+#   aioq:job:{id}                  - HASH  (job data as JSON string in field "data")
+#   aioq:jobs:all                  - SET   (all job ids)
+#   aioq:jobs:status:{status}      - SET   (job ids by status)
+#   aioq:jobs:queue:{queue}        - SET   (job ids by queue)
+#   aioq:workers                   - HASH  (worker_id -> JSON info)
+
+_PREFIX = "aioq"
+
+
+def _queue_key(queue: str) -> str:
+    return f"{_PREFIX}:queue:{queue}:pending"
+
+
+def _job_key(job_id: str) -> str:
+    return f"{_PREFIX}:job:{job_id}"
+
+
+def _status_set(status: JobStatus) -> str:
+    return f"{_PREFIX}:jobs:status:{status.value}"
+
+
+def _queue_set(queue: str) -> str:
+    return f"{_PREFIX}:jobs:queue:{queue}"
+
+
+_WORKERS_KEY = f"{_PREFIX}:workers"
+_WORKER_TTL = 30  # seconds; heartbeat must be sent more frequently
+
+
+class RedisBroker(BaseBroker):
+    def __init__(self, url: str = "redis://localhost:6379"):
+        self.url = url
+        self._redis: aioredis.Redis | None = None
+
+    @property
+    def redis(self) -> aioredis.Redis:
+        if self._redis is None:
+            raise RuntimeError("Broker not connected. Call connect() first.")
+        return self._redis
+
+    async def connect(self) -> None:
+        self._redis = aioredis.from_url(self.url, decode_responses=True)
+
+    async def disconnect(self) -> None:
+        if self._redis:
+            await self._redis.aclose()
+            self._redis = None
+
+    # ------------------------------------------------------------------
+    # Job lifecycle
+    # ------------------------------------------------------------------
+
+    async def enqueue(self, job: Job) -> None:
+        data = json.dumps(job.model_dump_json_safe())
+        pipe = self.redis.pipeline()
+        pipe.set(_job_key(job.id), data)
+        pipe.sadd(f"{_PREFIX}:jobs:all", job.id)
+        pipe.sadd(_status_set(job.status), job.id)
+        pipe.sadd(_queue_set(job.queue), job.id)
+
+        if job.run_at and job.run_at > datetime.now(timezone.utc).replace(tzinfo=None):
+            # deferred: store in a sorted set with score = unix timestamp
+            score = job.run_at.timestamp()
+            pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
+        else:
+            pipe.lpush(_queue_key(job.queue), job.id)
+
+        await pipe.execute()
+
+    async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None:
+        # First, promote any deferred jobs whose run_at has passed
+        now = time.time()
+        for queue in queues:
+            deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
+            due_ids = await self.redis.zrangebyscore(deferred_key, "-inf", now)
+            for job_id in due_ids:
+                await self.redis.zrem(deferred_key, job_id)
+                await self.redis.lpush(_queue_key(queue), job_id)
+
+        keys = [_queue_key(q) for q in queues]
+        result = await self.redis.brpop(keys, timeout=timeout)
+        if result is None:
+            return None
+
+        _, job_id = result
+        raw = await self.redis.get(_job_key(job_id))
+        if raw is None:
+            return None
+
+        return self._deserialize(raw)
+
+    async def ack(self, job: Job) -> None:
+        await self.update_job(job)
+
+    async def nack(self, job: Job, requeue: bool = False) -> None:
+        if requeue:
+            await self.redis.lpush(_queue_key(job.queue), job.id)
+        await self.update_job(job)
+
+    async def update_job(self, job: Job) -> None:
+        old_raw = await self.redis.get(_job_key(job.id))
+        pipe = self.redis.pipeline()
+
+        if old_raw:
+            old = self._deserialize(old_raw)
+            if old.status != job.status:
+                pipe.srem(_status_set(old.status), job.id)
+                pipe.sadd(_status_set(job.status), job.id)
+
+        data = json.dumps(job.model_dump_json_safe())
+        pipe.set(_job_key(job.id), data)
+        await pipe.execute()
+
+    async def retry_job(self, job_id: str) -> bool:
+        raw = await self.redis.get(_job_key(job_id))
+        if not raw:
+            return False
+        job = self._deserialize(raw)
+        if job.status not in (JobStatus.failed, JobStatus.cancelled):
+            return False
+        # Reset to a fresh pending state
+        job.status = JobStatus.pending
+        job.retries = 0
+        job.error = None
+        job.result = None
+        job.started_at = None
+        job.completed_at = None
+        job.worker_id = None
+        await self.update_job(job)
+        await self.redis.lpush(_queue_key(job.queue), job.id)
+        return True
+
+    async def cancel_job(self, job_id: str) -> bool:
+        raw = await self.redis.get(_job_key(job_id))
+        if not raw:
+            return False
+        job = self._deserialize(raw)
+        if job.status not in (JobStatus.pending, JobStatus.retrying):
+            return False
+        job.status = JobStatus.cancelled
+        await self.update_job(job)
+        return True
+
+    async def get_job(self, job_id: str) -> Job | None:
+        raw = await self.redis.get(_job_key(job_id))
+        if raw is None:
+            return None
+        return self._deserialize(raw)
+
+    async def list_jobs(
+        self,
+        queue: str | None = None,
+        status: JobStatus | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[Job]:
+        if queue and status:
+            ids = await self.redis.sinter(_queue_set(queue), _status_set(status))
+        elif queue:
+            ids = await self.redis.smembers(_queue_set(queue))
+        elif status:
+            ids = await self.redis.smembers(_status_set(status))
+        else:
+            ids = await self.redis.smembers(f"{_PREFIX}:jobs:all")
+
+        ids = list(ids)
+        ids = ids[offset : offset + limit]
+
+        jobs = []
+        for job_id in ids:
+            raw = await self.redis.get(_job_key(job_id))
+            if raw:
+                jobs.append(self._deserialize(raw))
+
+        jobs.sort(key=lambda j: j.enqueued_at, reverse=True)
+        return jobs
+
+    # ------------------------------------------------------------------
+    # Stats
+    # ------------------------------------------------------------------
+
+    async def queue_stats(self) -> dict[str, dict[str, int]]:
+        queue_keys = await self.redis.keys(f"{_PREFIX}:jobs:queue:*")
+        stats: dict[str, dict[str, int]] = {}
+
+        for key in queue_keys:
+            queue = key.split(":")[-1]
+            stats[queue] = {}
+            for status in JobStatus:
+                count = len(
+                    await self.redis.sinter(_queue_set(queue), _status_set(status))
+                )
+                if count > 0:
+                    stats[queue][status.value] = count
+
+        return stats
+
+    # ------------------------------------------------------------------
+    # Workers
+    # ------------------------------------------------------------------
+
+    async def register_worker(self, worker_id: str, queues: list[str]) -> None:
+        info = {
+            "worker_id": worker_id,
+            "queues": queues,
+            "registered_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
+            "last_heartbeat": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
+        }
+        await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
+        await self.redis.expire(_WORKERS_KEY, _WORKER_TTL * 10)
+
+    async def heartbeat_worker(self, worker_id: str) -> None:
+        raw = await self.redis.hget(_WORKERS_KEY, worker_id)
+        if raw:
+            info = json.loads(raw)
+            info["last_heartbeat"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+            await self.redis.hset(_WORKERS_KEY, worker_id, json.dumps(info))
+
+    async def deregister_worker(self, worker_id: str) -> None:
+        await self.redis.hdel(_WORKERS_KEY, worker_id)
+
+    async def list_workers(self) -> list[dict]:
+        raw_map = await self.redis.hgetall(_WORKERS_KEY)
+        workers = []
+        cutoff = time.time() - _WORKER_TTL
+        for worker_id, raw in raw_map.items():
+            info = json.loads(raw)
+            hb = datetime.fromisoformat(info["last_heartbeat"]).timestamp()
+            info["alive"] = hb > cutoff
+            workers.append(info)
+        return workers
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _deserialize(raw: str) -> Job:
+        data = json.loads(raw)
+        for k in ("enqueued_at", "started_at", "completed_at", "run_at"):
+            if data.get(k):
+                data[k] = datetime.fromisoformat(data[k])
+        return Job(**data)
