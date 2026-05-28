@@ -1501,8 +1501,20 @@
 <td>Queue name</td>
 </tr>
 <tr>
+<td>Priority</td>
+<td>Numeric priority (0 / 5 / 10)</td>
+</tr>
+<tr>
 <td>Worker</td>
 <td>Worker UUID that executed the job</td>
+</tr>
+<tr>
+<td>DLQ</td>
+<td>Dead letter queue name (if configured)</td>
+</tr>
+<tr>
+<td>Depends on</td>
+<td>Links to dependency jobs (if any)</td>
 </tr>
 <tr>
 <td>Status</td>
@@ -1521,8 +1533,16 @@
 <td>When execution finished</td>
 </tr>
 <tr>
+<td>Duration</td>
+<td>Wall-clock execution time</td>
+</tr>
+<tr>
+<td>Scheduled</td>
+<td><code>run_at</code> for deferred jobs</td>
+</tr>
+<tr>
 <td>Retries</td>
-<td>Current retry count / max retries</td>
+<td>Current retry count / max retries (dot indicator)</td>
 </tr>
 <tr>
 <td>Arguments</td>
@@ -1534,13 +1554,14 @@
 </tr>
 <tr>
 <td>Error</td>
-<td>Exception message for failed jobs</td>
+<td>Exception message for failed / dead jobs</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Cancel button</strong> — visible for <code>pending</code>, <code>retrying</code>, and <code>waiting</code> jobs. Prevents the job from executing.</p>
 <p><strong>Retry button</strong> — visible for <code>failed</code> and <code>cancelled</code> jobs. Re-enqueues as a fresh <code>pending</code> job.</p>
-<p><strong>Cancel button</strong> — visible for <code>pending</code> and <code>retrying</code> jobs. Prevents the job from executing.</p>
-<p>Auto-refreshes every 3 seconds while the job is in <code>pending</code> or <code>running</code> state.</p>
+<p><strong>Replay button</strong> — visible for <code>dead</code> jobs (exhausted DLQ). Re-enqueues as a fresh <code>pending</code> job.</p>
+<p>Auto-refreshes every 3 seconds while the job is in <code>pending</code>, <code>running</code>, <code>retrying</code>, or <code>waiting</code> state.</p>
 <h2 id="rest-api">REST API<a class="headerlink" href="#rest-api" title="Permanent link">&para;</a></h2>
 <p>The dashboard exposes a REST API for programmatic access or HTMX partial updates:</p>
 <table>
@@ -1570,12 +1591,17 @@
 <tr>
 <td><code>POST</code></td>
 <td><code>/api/jobs/{id}/cancel</code></td>
-<td>Cancel a pending/retrying job</td>
+<td>Cancel a pending/retrying/waiting job</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
 <td><code>/api/jobs/{id}/retry</code></td>
 <td>Retry a failed/cancelled job</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/jobs/{id}/replay</code></td>
+<td>Replay a dead (DLQ-exhausted) job</td>
 </tr>
 </tbody>
 </table>
