@@ -2,12 +2,16 @@
 
 Run with:
     uv run --extra dev pytest tests/test_integration_redis.py -v
+
+These tests are skipped automatically if no Redis is reachable at REDIS_URL.
+In CI the redis service is mapped to port 6380.
 """
 from __future__ import annotations
 
 import asyncio
 
 import pytest
+import redis.asyncio as aioredis
 
 from aioq.app import Aarq
 from aioq.backends.redis import RedisBroker
@@ -15,6 +19,23 @@ from aioq.models import Job, JobStatus
 from aioq.worker import Worker
 
 REDIS_URL = "redis://localhost:6380"
+
+pytestmark = pytest.mark.integration
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "integration: requires a live external service")
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def require_redis():
+    """Skip the entire module if Redis is not reachable."""
+    try:
+        r = aioredis.from_url(REDIS_URL, socket_connect_timeout=1)
+        await r.ping()
+        await r.aclose()
+    except Exception:
+        pytest.skip("Redis not available at " + REDIS_URL, allow_module_level=True)
 
 
 @pytest.fixture
@@ -143,8 +164,6 @@ async def test_enqueue_many(broker, app):
 
 
 async def test_dead_letter_queue(broker, app):
-    results = []
-
     @app.task(queue="default", retries=0, dead_letter_queue="dlq")
     async def failing_task(ctx):
         raise ValueError("boom")

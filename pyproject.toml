@@ -63,6 +63,9 @@ packages = ["src/aioq"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "integration: requires a live external service (e.g. Redis)",
+]
 
 [tool.ruff]
 src = ["src"]

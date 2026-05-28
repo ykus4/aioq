@@ -62,21 +62,28 @@ Full metadata for a single job:
 | ID | UUID |
 | Task name | Dotted module path |
 | Queue | Queue name |
+| Priority | Numeric priority (0 / 5 / 10) |
 | Worker | Worker UUID that executed the job |
+| DLQ | Dead letter queue name (if configured) |
+| Depends on | Links to dependency jobs (if any) |
 | Status | Current status |
 | Enqueued at | When the job was created |
 | Started at | When execution began |
 | Completed at | When execution finished |
-| Retries | Current retry count / max retries |
+| Duration | Wall-clock execution time |
+| Scheduled | `run_at` for deferred jobs |
+| Retries | Current retry count / max retries (dot indicator) |
 | Arguments | JSON-formatted `args` and `kwargs` |
 | Result | JSON-formatted return value (if `save_result=True`) |
-| Error | Exception message for failed jobs |
+| Error | Exception message for failed / dead jobs |
+
+**Cancel button** — visible for `pending`, `retrying`, and `waiting` jobs. Prevents the job from executing.
 
 **Retry button** — visible for `failed` and `cancelled` jobs. Re-enqueues as a fresh `pending` job.
 
-**Cancel button** — visible for `pending` and `retrying` jobs. Prevents the job from executing.
+**Replay button** — visible for `dead` jobs (exhausted DLQ). Re-enqueues as a fresh `pending` job.
 
-Auto-refreshes every 3 seconds while the job is in `pending` or `running` state.
+Auto-refreshes every 3 seconds while the job is in `pending`, `running`, `retrying`, or `waiting` state.
 
 ## REST API
 
@@ -87,8 +94,9 @@ The dashboard exposes a REST API for programmatic access or HTMX partial updates
 | `GET` | `/api/stats` | Queue stats + worker list |
 | `GET` | `/api/jobs` | Paginated job list (`queue`, `status`, `limit`, `offset`) |
 | `GET` | `/api/jobs/{id}` | Single job detail |
-| `POST` | `/api/jobs/{id}/cancel` | Cancel a pending/retrying job |
+| `POST` | `/api/jobs/{id}/cancel` | Cancel a pending/retrying/waiting job |
 | `POST` | `/api/jobs/{id}/retry` | Retry a failed/cancelled job |
+| `POST` | `/api/jobs/{id}/replay` | Replay a dead (DLQ-exhausted) job |
 
 ### SSE endpoint
 
