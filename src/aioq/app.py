@@ -13,8 +13,9 @@ if TYPE_CHECKING:
 class Aarq:
     """Main application object. Holds the broker and task registry."""
 
-    def __init__(self, broker: BaseBroker):
+    def __init__(self, broker: BaseBroker, *, dashboard_enabled: bool = True):
         self.broker = broker
+        self.dashboard_enabled = dashboard_enabled
         self._tasks: dict[str, TaskDef] = {}
         self._crons: list[CronDef] = []
 
