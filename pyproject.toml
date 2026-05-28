@@ -28,10 +28,14 @@ cron = [
 prometheus = [
     "prometheus-client>=0.20",
 ]
+mysql = [
+    "aiomysql>=0.2",
+]
 all = [
     "asyncpg>=0.29",
     "croniter>=2.0",
     "prometheus-client>=0.20",
+    "aiomysql>=0.2",
 ]
 dev = [
     "pytest>=8.0",
