@@ -175,6 +175,18 @@ class Worker:
                     job.retries,
                     job.max_retries,
                 )
+            elif job.dead_letter_queue:
+                job.status = JobStatus.dead
+                job.error = str(exc)
+                job.completed_at = datetime.now(UTC)
+                job.queue = job.dead_letter_queue
+                await self.app.broker.update_job(job)
+                logger.info(
+                    "Job %s (%s) moved to DLQ %s after exhausting retries",
+                    job.id,
+                    job.task_name,
+                    job.dead_letter_queue,
+                )
             else:
                 job.status = JobStatus.failed
                 job.error = str(exc)
