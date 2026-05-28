@@ -1,0 +1,36 @@
+{% for job in jobs %}
+{% set s = job.status.value %}
+{% set started = job.started_at %}
+{% set completed = job.completed_at %}
+{% if started and completed %}
+  {% set dur = "%.3fs"|format((completed - started).total_seconds()) %}
+{% elif started %}
+  {% set dur = "running…" %}
+{% else %}
+  {% set dur = "—" %}
+{% endif %}
+<tr style="{% if s == 'failed' %}background:#7f1d1d11;{% endif %}">
+  <td style="font-family:monospace; font-size:0.78rem;">
+    <a href="/jobs/{{ job.id }}">{{ job.id[:8] }}…</a>
+  </td>
+  <td style="font-size:0.82rem; color:#cbd5e1; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ job.task_name }}">
+    {{ job.task_name.split(".")[-1] }}
+  </td>
+  <td><span style="font-size:0.82rem;">{{ job.queue }}</span></td>
+  <td><span class="badge badge-{{ s }}">{{ s }}</span></td>
+  <td style="text-align:center; color:{% if job.retries > 0 %}#f59e0b{% else %}#64748b{% endif %};">
+    {{ job.retries }}/{{ job.max_retries }}
+  </td>
+  <td style="font-size:0.8rem; color:#64748b;">{{ job.enqueued_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+  <td style="font-size:0.82rem; color:#64748b;">{{ dur }}</td>
+  {% if s == "failed" %}
+  <td style="font-size:0.78rem; color:#fca5a5; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ job.error or '' }}">
+    {{ job.error or "" }}
+  </td>
+  {% else %}
+  <td></td>
+  {% endif %}
+</tr>
+{% else %}
+<tr><td colspan="8" style="color:#64748b; text-align:center; padding:2rem;">No jobs found.</td></tr>
+{% endfor %}

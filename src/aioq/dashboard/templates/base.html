@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>aioq dashboard</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    a { color: #38bdf8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .layout { display: flex; min-height: 100vh; }
+    nav { width: 220px; background: #1e293b; padding: 1.5rem 1rem; flex-shrink: 0; }
+    nav .logo { font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin-bottom: 2rem; letter-spacing: -0.5px; }
+    nav .logo span { color: #38bdf8; }
+    nav ul { list-style: none; }
+    nav ul li + li { margin-top: 0.25rem; }
+    nav ul li a { display: block; padding: 0.5rem 0.75rem; border-radius: 6px; color: #94a3b8; font-size: 0.9rem; }
+    nav ul li a:hover, nav ul li a.active { background: #334155; color: #f1f5f9; text-decoration: none; }
+    main { flex: 1; padding: 2rem; overflow-x: hidden; }
+
+    /* Cards */
+    .card { background: #1e293b; border-radius: 10px; padding: 1.25rem 1.5rem; }
+    .card-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 0.5rem; }
+
+    /* Stat grid */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: #f8fafc; }
+
+    /* Badge */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .badge-pending  { background: #1e40af33; color: #93c5fd; }
+    .badge-running  { background: #15803d33; color: #86efac; }
+    .badge-completed{ background: #16653333; color: #4ade80; }
+    .badge-failed   { background: #7f1d1d33; color: #fca5a5; }
+    .badge-retrying { background: #78350f33; color: #fcd34d; }
+    .badge-cancelled{ background: #1e293b; color: #64748b; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 500; border-bottom: 1px solid #334155; }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
+    tr:hover td { background: #1e293b; }
+
+    /* Dot indicator */
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .dot-alive { background: #4ade80; }
+    .dot-dead  { background: #ef4444; }
+
+    /* Page header */
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 600; color: #f8fafc; }
+    .page-header p  { color: #64748b; font-size: 0.875rem; margin-top: 0.25rem; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-bar select, .filter-bar button {
+      background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+      border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.85rem; cursor: pointer;
+    }
+    .filter-bar select:focus { outline: none; border-color: #38bdf8; }
+
+    /* Realtime pulse */
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; animation: pulse 2s infinite; margin-right: 6px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <div class="logo">aa<span>rq</span></div>
+    <ul>
+      <li><a href="/" {% if request.url.path == "/" %}class="active"{% endif %}>Overview</a></li>
+      <li><a href="/jobs" {% if request.url.path == "/jobs" %}class="active"{% endif %}>Jobs</a></li>
+    </ul>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>
