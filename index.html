@@ -910,6 +910,34 @@
   
   
     <li class="md-nav__item">
+      <a href="backends/mysql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MySQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="backends/custom/" class="md-nav__link">
         
   
@@ -1233,8 +1261,13 @@
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Decorator-based API</strong> — <code>@app.task(...)</code> and <code>@app.cron(...)</code></li>
-<li><strong>Multiple backends</strong> — Redis (built-in), PostgreSQL (<code>SKIP LOCKED</code>), extensible via <code>BaseBroker</code></li>
+<li><strong>Multiple backends</strong> — Redis (built-in), PostgreSQL (<code>SKIP LOCKED</code>), MySQL (<code>SKIP LOCKED</code>), extensible via <code>BaseBroker</code></li>
 <li><strong>Built-in dashboard</strong> — real-time queue stats, job browser, retry/cancel from UI</li>
+<li><strong>Prometheus metrics</strong> — <code>/metrics</code> endpoint for Grafana/Alertmanager integration</li>
+<li><strong>Priority queues</strong> — per-job priority (0/5/10) processed highest-first</li>
+<li><strong>Batch enqueue</strong> — <code>task.enqueue_many(items)</code> for efficient bulk submission</li>
+<li><strong>Dead letter queue</strong> — configurable DLQ per task; failed jobs move to <code>dead</code> status</li>
+<li><strong>Job dependencies</strong> — <code>depends_on=[job_id, ...]</code> to chain jobs</li>
 <li><strong>Deferred jobs</strong> — <code>defer_by=60</code> or <code>defer_until=datetime(...)</code></li>
 <li><strong>Retry with delay</strong> — configurable <code>retries</code> and <code>retry_delay</code></li>
 <li><strong>Cron scheduling</strong> — standard cron expressions via <code>croniter</code></li>
@@ -1280,10 +1313,12 @@
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>aioq<span class="w"> </span>dashboard<span class="w"> </span>tasks:app<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
 </code></pre></div>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>aioq<span class="w">                   </span><span class="c1"># Redis only</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[postgres]&quot;</span><span class="w">       </span><span class="c1"># + PostgreSQL</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span><span class="w">           </span><span class="c1"># + cron scheduling</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[all]&quot;</span><span class="w">            </span><span class="c1"># everything</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>aioq<span class="w">                     </span><span class="c1"># Redis only</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[postgres]&quot;</span><span class="w">         </span><span class="c1"># + PostgreSQL</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[mysql]&quot;</span><span class="w">            </span><span class="c1"># + MySQL</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[prometheus]&quot;</span><span class="w">       </span><span class="c1"># + Prometheus metrics</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span><span class="w">             </span><span class="c1"># + cron scheduling</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[all]&quot;</span><span class="w">              </span><span class="c1"># everything</span>
 </code></pre></div>
 <p><strong>Requirements:</strong> Python 3.11+</p>
 <h2 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Permanent link">&para;</a></h2>

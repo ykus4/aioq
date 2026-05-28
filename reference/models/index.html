@@ -821,6 +821,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../backends/mysql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MySQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../backends/custom/" class="md-nav__link">
         
   
@@ -1274,6 +1302,10 @@
 <td>Waiting to be picked up by a worker</td>
 </tr>
 <tr>
+<td><code>waiting</code></td>
+<td>Blocked on one or more dependencies</td>
+</tr>
+<tr>
 <td><code>running</code></td>
 <td>Currently executing</td>
 </tr>
@@ -1293,34 +1325,43 @@
 <td><code>cancelled</code></td>
 <td>Cancelled before execution</td>
 </tr>
+<tr>
+<td><code>dead</code></td>
+<td>Exhausted retries and moved to dead letter queue</td>
+</tr>
 </tbody>
 </table>
 <h3 id="state-transitions">State transitions<a class="headerlink" href="#state-transitions" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pending ──► running ──► completed
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                    └──► failed ──► (retry) ──► pending
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                                └──► (retry from UI) ──► pending
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pending ──► cancelled ──► (retry from UI) ──► pending
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                                └──► dead (DLQ) ──► (replay) ──► pending
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                                └──► (retry from UI) ──► pending
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>pending ──► cancelled ──► (retry from UI) ──► pending
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>waiting ──► pending (when all dependencies complete) ──► running
 </code></pre></div>
 <h2 id="job">Job<a class="headerlink" href="#job" title="Permanent link">&para;</a></h2>
 <p><code>aioq.models.Job</code> is a Pydantic model representing a job record.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># UUID (auto-generated)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># Dotted task name</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">queue</span><span class="p">:</span> <span class="nb">str</span>                 <span class="c1"># Queue name</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>            <span class="c1"># Positional arguments</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>     <span class="c1"># Keyword arguments</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">status</span><span class="p">:</span> <span class="n">JobStatus</span>          <span class="c1"># Current status</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span>               <span class="c1"># Current retry count</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Max retry attempts</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># Seconds between retries</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">enqueued_at</span><span class="p">:</span> <span class="n">datetime</span>      <span class="c1"># When the job was created</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">started_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">completed_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">run_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>    <span class="c1"># Scheduled time (deferred jobs)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span>                <span class="c1"># Return value (if save_result=True)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>          <span class="c1"># Exception message</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">worker_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>      <span class="c1"># Worker that executed the job</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">save_result</span><span class="p">:</span> <span class="nb">bool</span>          <span class="c1"># Whether to persist result</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                       <span class="c1"># UUID (auto-generated)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># Dotted task name</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">queue</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Queue name</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>               <span class="c1"># Positional arguments</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>        <span class="c1"># Keyword arguments</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">priority</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Priority tier: 0, 5, or 10</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">status</span><span class="p">:</span> <span class="n">JobStatus</span>             <span class="c1"># Current status</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># Current retry count</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Max retry attempts</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">float</span>            <span class="c1"># Seconds between retries</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">enqueued_at</span><span class="p">:</span> <span class="n">datetime</span>         <span class="c1"># When the job was created</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">started_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">completed_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">run_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>       <span class="c1"># Scheduled time (deferred jobs)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span>                   <span class="c1"># Return value (if save_result=True)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>             <span class="c1"># Exception message</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">worker_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>         <span class="c1"># Worker that executed the job</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">save_result</span><span class="p">:</span> <span class="nb">bool</span>             <span class="c1"># Whether to persist result</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">dead_letter_queue</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="c1"># DLQ queue name (if configured)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">depends_on</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>         <span class="c1"># Job IDs this job depends on</span>
 </code></pre></div>
 <h3 id="model_dump_json_safe"><code>model_dump_json_safe()</code><a class="headerlink" href="#model_dump_json_safe" title="Permanent link">&para;</a></h3>
 <p>Returns a dict suitable for JSON serialisation — datetime fields are converted to ISO 8601 strings.</p>

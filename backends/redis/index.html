@@ -869,6 +869,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#priority-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority queues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deferred-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -936,6 +947,34 @@
     
   
     PostgreSQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MySQL
   
 
     
@@ -1249,6 +1288,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#priority-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority queues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deferred-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1356,9 +1406,9 @@
 </thead>
 <tbody>
 <tr>
-<td><code>aioq:queue:{queue}:pending</code></td>
+<td><code>aioq:queue:{queue}:p{0\|5\|10}:pending</code></td>
 <td>List</td>
-<td>Active pending job IDs (LPUSH / BRPOP)</td>
+<td>Active pending job IDs per priority tier (LPUSH / BRPOP)</td>
 </tr>
 <tr>
 <td><code>aioq:queue:{queue}:deferred</code></td>
@@ -1386,12 +1436,19 @@
 <td>Job IDs by queue</td>
 </tr>
 <tr>
+<td><code>aioq:job:{id}:dependents</code></td>
+<td>Set</td>
+<td>IDs of jobs waiting on this job to complete</td>
+</tr>
+<tr>
 <td><code>aioq:workers</code></td>
 <td>Hash</td>
 <td>Worker info keyed by worker ID</td>
 </tr>
 </tbody>
 </table>
+<h2 id="priority-queues">Priority queues<a class="headerlink" href="#priority-queues" title="Permanent link">&para;</a></h2>
+<p>Each queue uses three separate lists for priority tiers: <code>p10</code> (high), <code>p5</code> (medium), <code>p0</code> (default). Workers call <code>BRPOP</code> on all three lists in highest-first order, so high-priority jobs are always consumed before lower-priority ones in the same queue.</p>
 <h2 id="deferred-jobs">Deferred jobs<a class="headerlink" href="#deferred-jobs" title="Permanent link">&para;</a></h2>
 <p>Deferred jobs are stored in <code>aioq:queue:{queue}:deferred</code> with a Unix timestamp as the sort score. On every <code>dequeue()</code> call the worker runs:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ZRANGEBYSCORE aioq:queue:{queue}:deferred -inf &lt;now&gt;

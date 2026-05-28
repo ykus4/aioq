@@ -928,6 +928,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../backends/mysql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MySQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../backends/custom/" class="md-nav__link">
         
   
@@ -1269,11 +1297,17 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># With PostgreSQL support</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[postgres]&quot;</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># With cron scheduling</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># With MySQL support</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[mysql]&quot;</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Everything</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[all]&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># With Prometheus metrics</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[prometheus]&quot;</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># With cron scheduling</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># Everything</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[all]&quot;</span>
 </code></pre></div>
 <h2 id="install-with-uv">Install with uv<a class="headerlink" href="#install-with-uv" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>add<span class="w"> </span>aioq
@@ -1297,12 +1331,20 @@
 <td><code>asyncpg</code> — enables <code>PostgresBroker</code></td>
 </tr>
 <tr>
+<td><code>mysql</code></td>
+<td><code>aiomysql</code> — enables <code>MySQLBroker</code></td>
+</tr>
+<tr>
+<td><code>prometheus</code></td>
+<td><code>prometheus_client</code> — enables <code>/metrics</code> endpoint</td>
+</tr>
+<tr>
 <td><code>cron</code></td>
 <td><code>croniter</code> — enables <code>@app.cron(...)</code></td>
 </tr>
 <tr>
 <td><code>all</code></td>
-<td><code>asyncpg</code> + <code>croniter</code></td>
+<td>all of the above</td>
 </tr>
 </tbody>
 </table>

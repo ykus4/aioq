@@ -725,6 +725,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#batch-enqueue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch enqueue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dead-letter-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead letter queue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#job-status-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -930,6 +974,34 @@
     
   
     PostgreSQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/mysql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MySQL
   
 
     
@@ -1270,6 +1342,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#batch-enqueue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch enqueue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dead-letter-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead letter queue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#job-status-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1355,11 +1471,65 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">retried</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">retry_job</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># True if the job was failed/cancelled and has been re-enqueued as pending</span>
 </code></pre></div>
+<h2 id="batch-enqueue">Batch enqueue<a class="headerlink" href="#batch-enqueue" title="Permanent link">&para;</a></h2>
+<p>Enqueue multiple calls to the same task in a single round-trip:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process_record</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">([</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="p">{</span><span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="p">{</span><span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="p">{</span><span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">])</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">jobs</span><span class="p">))</span>  <span class="c1"># 3</span>
+</code></pre></div>
+<p>Items can be dicts (kwargs) or tuples (positional args):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">send_email</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">([</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="p">(</span><span class="s2">&quot;user1@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">),</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="p">(</span><span class="s2">&quot;user2@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">),</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">])</span>
+</code></pre></div>
+<p>Supports <code>defer_by</code> and <code>priority</code> overrides:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process_record</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">defer_by</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="priority">Priority<a class="headerlink" href="#priority" title="Permanent link">&para;</a></h2>
+<p>Jobs are assigned a priority of <code>0</code> (default), <code>5</code> (medium), or <code>10</code> (high). Workers dequeue higher-priority jobs first.</p>
+<p>Set priority at the task level:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">urgent_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="o">...</span>
+</code></pre></div>
+<p>Or per-enqueue:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">my_task</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="dead-letter-queue">Dead letter queue<a class="headerlink" href="#dead-letter-queue" title="Permanent link">&para;</a></h2>
+<p>When a job exhausts all retries it normally moves to <code>failed</code>. With a DLQ configured it moves to <code>dead</code> in the DLQ queue instead:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dead_letter_queue</span><span class="o">=</span><span class="s2">&quot;dlq&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">risky_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="o">...</span>
+</code></pre></div>
+<p>Inspect and replay dead jobs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">dead_jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">list_dead_jobs</span><span class="p">()</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">replayed</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">replay_dead_job</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>  <span class="c1"># re-enqueues as pending</span>
+</code></pre></div>
+<h2 id="job-dependencies">Job dependencies<a class="headerlink" href="#job-dependencies" title="Permanent link">&para;</a></h2>
+<p>Use <code>depends_on</code> to ensure a job runs only after other jobs complete:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">job_a</span> <span class="o">=</span> <span class="k">await</span> <span class="n">step_a</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">job_b</span> <span class="o">=</span> <span class="k">await</span> <span class="n">step_b</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">depends_on</span><span class="o">=</span><span class="p">[</span><span class="n">job_a</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1"># job_b starts in `waiting` state and is promoted to `pending` once job_a completes</span>
+</code></pre></div>
+<p>Chaining multiple dependencies:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">fetch_data</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;api&quot;</span><span class="p">),</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">fetch_data</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;db&quot;</span><span class="p">),</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">job_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">]</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">result_job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">merge_results</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">depends_on</span><span class="o">=</span><span class="n">job_ids</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="job-status-lifecycle">Job status lifecycle<a class="headerlink" href="#job-status-lifecycle" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pending ──► running ──► completed
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>                    └──► failed ──► (retry) ──► pending
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>                                └──► (retry from UI/code) ──► pending
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>pending ──► cancelled ──► (retry from UI/code) ──► pending
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>pending ──► running ──► completed
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>                    └──► failed ──► (retry) ──► pending
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>                                └──► dead (DLQ) ──► (replay) ──► pending
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>                                └──► (retry from UI/code) ──► pending
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>pending ──► cancelled ──► (retry from UI/code) ──► pending
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>waiting ──► pending (when all dependencies complete) ──► running
 </code></pre></div>
 
 
