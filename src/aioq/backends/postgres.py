@@ -33,6 +33,7 @@ from .base import BaseBroker
 #     result        JSONB
 #     error         TEXT
 #     worker_id     TEXT
+#     priority      INT NOT NULL DEFAULT 0
 #     save_result   BOOLEAN NOT NULL DEFAULT FALSE
 #
 #   aioq_workers
@@ -59,11 +60,13 @@ CREATE TABLE IF NOT EXISTS aioq_jobs (
     result        JSONB,
     error         TEXT,
     worker_id     TEXT,
+    priority      INT NOT NULL DEFAULT 0,
     save_result   BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS aioq_jobs_queue_status ON aioq_jobs (queue, status);
 CREATE INDEX IF NOT EXISTS aioq_jobs_run_at ON aioq_jobs (run_at) WHERE run_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS aioq_jobs_priority ON aioq_jobs (queue, priority DESC, enqueued_at) WHERE status = 'pending';
 
 CREATE TABLE IF NOT EXISTS aioq_workers (
     worker_id       TEXT PRIMARY KEY,
@@ -112,12 +115,13 @@ class PostgresBroker(BaseBroker):
                 INSERT INTO aioq_jobs
                     (id, task_name, queue, status, args, kwargs,
                      retries, max_retries, retry_delay,
-                     enqueued_at, run_at, save_result)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                     enqueued_at, run_at, priority, save_result)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
                 ON CONFLICT (id) DO UPDATE SET
                     status = EXCLUDED.status,
                     retries = EXCLUDED.retries,
-                    run_at = EXCLUDED.run_at
+                    run_at = EXCLUDED.run_at,
+                    priority = EXCLUDED.priority
                 """,
                 job.id,
                 job.task_name,
@@ -130,6 +134,7 @@ class PostgresBroker(BaseBroker):
                 job.retry_delay,
                 job.enqueued_at,
                 job.run_at,
+                job.priority,
                 job.save_result,
             )
 
@@ -150,7 +155,7 @@ class PostgresBroker(BaseBroker):
                         WHERE queue = ANY($1::text[])
                           AND status = 'pending'
                           AND (run_at IS NULL OR run_at <= now())
-                        ORDER BY enqueued_at
+                        ORDER BY priority DESC, enqueued_at
                         FOR UPDATE SKIP LOCKED
                         LIMIT 1
                     )
@@ -339,6 +344,7 @@ class PostgresBroker(BaseBroker):
             run_at=row["run_at"],
             result=json.loads(row["result"]) if row["result"] else None,
             error=row["error"],
+            priority=row["priority"],
             worker_id=row["worker_id"],
             save_result=row["save_result"],
         )
