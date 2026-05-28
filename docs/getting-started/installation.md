@@ -14,6 +14,12 @@ pip install aioq
 # With PostgreSQL support
 pip install "aioq[postgres]"
 
+# With MySQL support
+pip install "aioq[mysql]"
+
+# With Prometheus metrics
+pip install "aioq[prometheus]"
+
 # With cron scheduling
 pip install "aioq[cron]"
 
@@ -34,8 +40,10 @@ uv add "aioq[all]"
 |---|---|
 | *(none)* | Redis backend, dashboard, worker, CLI |
 | `postgres` | `asyncpg` — enables `PostgresBroker` |
+| `mysql` | `aiomysql` — enables `MySQLBroker` |
+| `prometheus` | `prometheus_client` — enables `/metrics` endpoint |
 | `cron` | `croniter` — enables `@app.cron(...)` |
-| `all` | `asyncpg` + `croniter` |
+| `all` | all of the above |
 
 ## Development install
 

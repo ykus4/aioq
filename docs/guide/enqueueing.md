@@ -78,11 +78,97 @@ retried = await broker.retry_job(job.id)
 # True if the job was failed/cancelled and has been re-enqueued as pending
 ```
 
+## Batch enqueue
+
+Enqueue multiple calls to the same task in a single round-trip:
+
+```python
+jobs = await process_record.enqueue_many([
+    {"record_id": 1},
+    {"record_id": 2},
+    {"record_id": 3},
+])
+print(len(jobs))  # 3
+```
+
+Items can be dicts (kwargs) or tuples (positional args):
+
+```python
+jobs = await send_email.enqueue_many([
+    ("user1@example.com", "Hello"),
+    ("user2@example.com", "Hello"),
+])
+```
+
+Supports `defer_by` and `priority` overrides:
+
+```python
+jobs = await process_record.enqueue_many(items, defer_by=30, priority=10)
+```
+
+## Priority
+
+Jobs are assigned a priority of `0` (default), `5` (medium), or `10` (high). Workers dequeue higher-priority jobs first.
+
+Set priority at the task level:
+
+```python
+@app.task(queue="default", priority=10)
+async def urgent_task(ctx, data):
+    ...
+```
+
+Or per-enqueue:
+
+```python
+job = await my_task.enqueue(data, priority=5)
+```
+
+## Dead letter queue
+
+When a job exhausts all retries it normally moves to `failed`. With a DLQ configured it moves to `dead` in the DLQ queue instead:
+
+```python
+@app.task(queue="default", retries=3, dead_letter_queue="dlq")
+async def risky_task(ctx, data):
+    ...
+```
+
+Inspect and replay dead jobs:
+
+```python
+dead_jobs = await broker.list_dead_jobs()
+replayed = await broker.replay_dead_job(job.id)  # re-enqueues as pending
+```
+
+## Job dependencies
+
+Use `depends_on` to ensure a job runs only after other jobs complete:
+
+```python
+job_a = await step_a.enqueue(data)
+job_b = await step_b.enqueue(data, depends_on=[job_a.id])
+# job_b starts in `waiting` state and is promoted to `pending` once job_a completes
+```
+
+Chaining multiple dependencies:
+
+```python
+jobs = await asyncio.gather(
+    fetch_data.enqueue(source="api"),
+    fetch_data.enqueue(source="db"),
+)
+job_ids = [j.id for j in jobs]
+result_job = await merge_results.enqueue(depends_on=job_ids)
+```
+
 ## Job status lifecycle
 
 ```
 pending ──► running ──► completed
                     └──► failed ──► (retry) ──► pending
+                                └──► dead (DLQ) ──► (replay) ──► pending
                                 └──► (retry from UI/code) ──► pending
 pending ──► cancelled ──► (retry from UI/code) ──► pending
+waiting ──► pending (when all dependencies complete) ──► running
 ```
