@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 from datetime import UTC, datetime
@@ -159,8 +160,6 @@ class PostgresBroker(BaseBroker):
                 )
             if row:
                 return self._row_to_job(row)
-            import asyncio
-
             await asyncio.sleep(0.5)
         return None
 
@@ -301,7 +300,7 @@ class PostgresBroker(BaseBroker):
             await conn.execute("DELETE FROM aioq_workers WHERE worker_id = $1", worker_id)
 
     async def list_workers(self) -> list[dict]:
-        cutoff = datetime.now(UTC).replace(tzinfo=None).timestamp() - _WORKER_TTL
+        cutoff = datetime.now(UTC).timestamp() - _WORKER_TTL
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("SELECT * FROM aioq_workers")
         workers = []

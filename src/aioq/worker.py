@@ -31,6 +31,7 @@ class Worker:
         self._semaphore: asyncio.Semaphore | None = None
         self._running = False
         self._tasks: set[asyncio.Task] = set()
+        self._cron_tasks: set[asyncio.Task] = set()
 
     async def run(self) -> None:
         self._semaphore = asyncio.Semaphore(self.concurrency)
@@ -55,22 +56,33 @@ class Worker:
 
         try:
             while self._running:
-                async with self._semaphore:
-                    job = await broker.dequeue(self.queues, timeout=2.0)
+                job = await broker.dequeue(self.queues, timeout=2.0)
                 if job is None:
                     continue
+                await self._semaphore.acquire()
                 t = asyncio.create_task(self._process(job))
                 self._tasks.add(t)
-                t.add_done_callback(self._tasks.discard)
+                t.add_done_callback(self._on_task_done)
         finally:
             heartbeat_task.cancel()
             cron_task.cancel()
+            # Wait for in-flight jobs (not cron tasks) to finish
             if self._tasks:
                 logger.info("Waiting for %d in-flight jobs to finish…", len(self._tasks))
                 await asyncio.gather(*self._tasks, return_exceptions=True)
+            # Cancel any still-running cron tasks
+            if self._cron_tasks:
+                for ct in list(self._cron_tasks):
+                    ct.cancel()
+                await asyncio.gather(*self._cron_tasks, return_exceptions=True)
             await broker.deregister_worker(self.worker_id)
             await broker.disconnect()
             logger.info("Worker %s stopped.", self.worker_id)
+
+    def _on_task_done(self, t: asyncio.Task) -> None:
+        self._tasks.discard(t)
+        assert self._semaphore is not None
+        self._semaphore.release()
 
     def _request_stop(self) -> None:
         logger.info("Shutdown signal received. Finishing in-flight jobs…")
@@ -100,8 +112,8 @@ class Worker:
                         "broker": self.app.broker,
                     }
                     t = asyncio.create_task(self._run_cron(cron_def, ctx))
-                    self._tasks.add(t)
-                    t.add_done_callback(self._tasks.discard)
+                    self._cron_tasks.add(t)
+                    t.add_done_callback(self._cron_tasks.discard)
                     schedule[cron_def] = cron_def.next_run()
             await asyncio.sleep(1)
 
@@ -117,12 +129,18 @@ class Worker:
             logger.error("Unknown task: %s — marking as failed", job.task_name)
             job.status = JobStatus.failed
             job.error = f"Unknown task: {job.task_name}"
-            job.completed_at = datetime.now(UTC).replace(tzinfo=None)
+            job.completed_at = datetime.now(UTC)
             await self.app.broker.update_job(job)
             return
 
+        # Check for cancellation before committing to running state
+        fresh = await self.app.broker.get_job(job.id)
+        if fresh and fresh.status == JobStatus.cancelled:
+            logger.info("Job %s was cancelled before execution, skipping", job.id)
+            return
+
         job.status = JobStatus.running
-        job.started_at = datetime.now(UTC).replace(tzinfo=None)
+        job.started_at = datetime.now(UTC)
         job.worker_id = self.worker_id
         await self.app.broker.update_job(job)
 
@@ -132,16 +150,10 @@ class Worker:
             "broker": self.app.broker,
         }
 
-        # Re-check if job was cancelled while waiting in queue
-        fresh = await self.app.broker.get_job(job.id)
-        if fresh and fresh.status == JobStatus.cancelled:
-            logger.info("Job %s was cancelled before execution, skipping", job.id)
-            return
-
         try:
             result = await task_def(ctx, *job.args, **job.kwargs)
             job.status = JobStatus.completed
-            job.completed_at = datetime.now(UTC).replace(tzinfo=None)
+            job.completed_at = datetime.now(UTC)
             if job.save_result:
                 job.result = result
             await self.app.broker.update_job(job)
@@ -166,5 +178,5 @@ class Worker:
             else:
                 job.status = JobStatus.failed
                 job.error = str(exc)
-                job.completed_at = datetime.now(UTC).replace(tzinfo=None)
+                job.completed_at = datetime.now(UTC)
                 await self.app.broker.update_job(job)

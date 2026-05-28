@@ -44,7 +44,7 @@ class TaskDef:
         """Enqueue this task and return the Job."""
         run_at: datetime | None = None
         if defer_by is not None:
-            run_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(seconds=defer_by)
+            run_at = datetime.now(UTC) + timedelta(seconds=defer_by)
         elif defer_until is not None:
             run_at = defer_until
 
