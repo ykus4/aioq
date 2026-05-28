@@ -52,7 +52,7 @@ jobs:
         run: uv run pytest tests/ -v --cov=src/aioq --cov-report=xml
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         if: matrix.python-version == '3.11'
         with:
           files: coverage.xml
