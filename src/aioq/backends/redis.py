@@ -97,16 +97,7 @@ class RedisBroker(BaseBroker):
     # ------------------------------------------------------------------
 
     async def enqueue(self, job: Job) -> None:
-        # Check dependencies: if any dep is not yet completed, store as waiting
-        if job.depends_on:
-            all_completed = True
-            for dep_id in job.depends_on:
-                dep = await self.get_job(dep_id)
-                if dep is None or dep.status != JobStatus.completed:
-                    all_completed = False
-                    break
-            if not all_completed:
-                job.status = JobStatus.waiting
+        await self._check_dependencies(job)
 
         pipe = self.redis.pipeline()
         data = json.dumps(job.model_dump_json_safe())
@@ -162,9 +153,6 @@ class RedisBroker(BaseBroker):
             return None
 
         return self._deserialize(raw)
-
-    async def ack(self, job: Job) -> None:
-        await self.update_job(job)
 
     async def nack(self, job: Job, requeue: bool = False) -> None:
         if requeue:
