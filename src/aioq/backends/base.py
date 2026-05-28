@@ -17,6 +17,11 @@ class BaseBroker(ABC):
     @abstractmethod
     async def enqueue(self, job: Job) -> None: ...
 
+    async def enqueue_many(self, jobs: list[Job]) -> None:
+        """Enqueue multiple jobs atomically. Default: loop over enqueue()."""
+        for job in jobs:
+            await self.enqueue(job)
+
     @abstractmethod
     async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None: ...
 
@@ -67,6 +72,25 @@ class BaseBroker(ABC):
 
     @abstractmethod
     async def list_workers(self) -> list[dict]: ...
+
+    async def list_dead_jobs(self, queue: str | None = None) -> list[Job]:
+        """Return all jobs with status=dead, optionally filtered by DLQ queue name."""
+        return await self.list_jobs(queue=queue, status=JobStatus.dead)
+
+    async def replay_dead_job(self, job_id: str) -> bool:
+        """Re-enqueue a dead job as pending with retries reset. Returns True if replayed."""
+        job = await self.get_job(job_id)
+        if job is None or job.status != JobStatus.dead:
+            return False
+        job.status = JobStatus.pending
+        job.retries = 0
+        job.error = None
+        job.started_at = None
+        job.completed_at = None
+        job.worker_id = None
+        await self.update_job(job)
+        await self.enqueue(job)
+        return True
 
     async def __aenter__(self) -> BaseBroker:
         await self.connect()
