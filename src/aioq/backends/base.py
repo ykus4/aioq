@@ -18,18 +18,22 @@ class BaseBroker(ABC):
     async def enqueue(self, job: Job) -> None: ...
 
     async def enqueue_many(self, jobs: list[Job]) -> None:
-        """Enqueue multiple jobs atomically. Default: loop over enqueue()."""
+        """Enqueue multiple jobs. Default: loop over enqueue()."""
         for job in jobs:
             await self.enqueue(job)
 
     @abstractmethod
     async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None: ...
 
-    @abstractmethod
-    async def ack(self, job: Job) -> None: ...
+    async def ack(self, job: Job) -> None:
+        """Mark job as acknowledged by persisting its current state."""
+        await self.update_job(job)
 
-    @abstractmethod
-    async def nack(self, job: Job, requeue: bool = False) -> None: ...
+    async def nack(self, job: Job, requeue: bool = False) -> None:
+        """Negative-acknowledge a job. Requeue it as pending if requeue=True."""
+        if requeue:
+            job.status = JobStatus.pending
+        await self.update_job(job)
 
     @abstractmethod
     async def update_job(self, job: Job) -> None: ...
@@ -62,7 +66,7 @@ class BaseBroker(ABC):
 
     @abstractmethod
     async def cancel_job(self, job_id: str) -> bool:
-        """Cancel a pending/retrying job. Returns True if cancelled."""
+        """Cancel a pending/retrying/waiting job. Returns True if cancelled."""
         ...
 
     @abstractmethod
@@ -91,6 +95,20 @@ class BaseBroker(ABC):
         await self.update_job(job)
         await self.enqueue(job)
         return True
+
+    async def _check_dependencies(self, job: Job) -> None:
+        """Set job status to waiting if any dependency is not yet completed.
+
+        Mutates *job* in-place. Call this at the start of enqueue() before
+        persisting the job.
+        """
+        if not job.depends_on:
+            return
+        for dep_id in job.depends_on:
+            dep = await self.get_job(dep_id)
+            if dep is None or dep.status != JobStatus.completed:
+                job.status = JobStatus.waiting
+                return
 
     async def __aenter__(self) -> BaseBroker:
         await self.connect()

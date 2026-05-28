@@ -111,15 +111,7 @@ class PostgresBroker(BaseBroker):
     # ------------------------------------------------------------------
 
     async def enqueue(self, job: Job) -> None:
-        if job.depends_on:
-            async with self.pool.acquire() as conn:
-                rows = await conn.fetch(
-                    "SELECT id, status FROM aioq_jobs WHERE id = ANY($1::text[])",
-                    job.depends_on,
-                )
-            completed_ids = {row["id"] for row in rows if row["status"] == "completed"}
-            if set(job.depends_on) != completed_ids:
-                job.status = JobStatus.waiting
+        await self._check_dependencies(job)
 
         async with self.pool.acquire() as conn:
             await conn.execute(
@@ -181,14 +173,6 @@ class PostgresBroker(BaseBroker):
                 return self._row_to_job(row)
             await asyncio.sleep(0.5)
         return None
-
-    async def ack(self, job: Job) -> None:
-        await self.update_job(job)
-
-    async def nack(self, job: Job, requeue: bool = False) -> None:
-        if requeue:
-            job.status = JobStatus.pending
-        await self.update_job(job)
 
     async def update_job(self, job: Job) -> None:
         async with self.pool.acquire() as conn:
