@@ -1,6 +1,6 @@
-from src.aioq.app import Aarq
-from src.aioq.backends.redis import RedisBroker
-from src.aioq.cron import CronDef
+from aioq.app import Aarq
+from aioq.backends.redis import RedisBroker
+from aioq.cron import CronDef
 
 
 def test_cron_registration():

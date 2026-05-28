@@ -71,7 +71,7 @@ def patch_aiomysql(monkeypatch):
 @pytest.fixture
 def broker_cls(patch_aiomysql):
     """Import MySQLBroker after aiomysql has been patched."""
-    from src.aioq.backends.mysql import MySQLBroker  # noqa: PLC0415
+    from aioq.backends.mysql import MySQLBroker  # noqa: PLC0415
 
     return MySQLBroker
 
@@ -149,7 +149,7 @@ async def test_enqueue_executes_insert(broker_cls, patch_aiomysql):
     broker = broker_cls()
     await broker.connect()
 
-    from src.aioq.models import Job  # noqa: PLC0415
+    from aioq.models import Job  # noqa: PLC0415
 
     job = Job(task_name="tasks.add", queue="default", kwargs={"x": 1})
     await broker.enqueue(job)
@@ -163,8 +163,8 @@ async def test_enqueue_executes_insert(broker_cls, patch_aiomysql):
 
 async def test_row_to_job_converts_dict(broker_cls):
     """_row_to_job() correctly converts a dict row into a Job object."""
-    from src.aioq.backends.mysql import MySQLBroker  # noqa: PLC0415
-    from src.aioq.models import Job, JobStatus  # noqa: PLC0415
+    from aioq.backends.mysql import MySQLBroker  # noqa: PLC0415
+    from aioq.models import Job, JobStatus  # noqa: PLC0415
 
     now = datetime.now(UTC)
     row = {

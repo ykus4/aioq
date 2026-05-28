@@ -5,10 +5,11 @@ from __future__ import annotations
 import fakeredis.aioredis
 import pytest
 import redis.asyncio as aioredis
-from src.aioq.app import Aarq
-from src.aioq.backends.redis import RedisBroker
-from src.aioq.models import Job, JobStatus
-from src.aioq.worker import Worker
+
+from aioq.app import Aarq
+from aioq.backends.redis import RedisBroker
+from aioq.models import Job, JobStatus
+from aioq.worker import Worker
 
 
 @pytest.fixture

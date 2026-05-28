@@ -1,16 +1,18 @@
 from .base import BaseBroker
 from .redis import RedisBroker
 
+__all__ = ["BaseBroker", "RedisBroker"]
+
 try:
     from .postgres import PostgresBroker
 
-    __all__ = ["BaseBroker", "RedisBroker", "PostgresBroker"]
+    __all__ = [*__all__, "PostgresBroker"]
 except ImportError:
-    __all__ = ["BaseBroker", "RedisBroker"]
+    pass
 
 try:
     from .mysql import MySQLBroker
 
-    __all__ = [*__all__, "MySQLBroker"]  # type: ignore[name-defined]
+    __all__ = [*__all__, "MySQLBroker"]
 except ImportError:
     pass

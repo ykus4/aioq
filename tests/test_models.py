@@ -1,4 +1,4 @@
-from src.aioq.models import Job, JobStatus
+from aioq.models import Job, JobStatus
 
 
 def test_job_defaults():

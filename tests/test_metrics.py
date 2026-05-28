@@ -4,8 +4,9 @@ from unittest.mock import AsyncMock
 
 import httpx
 from fastapi import FastAPI
-from src.aioq.app import Aarq
-from src.aioq.dashboard.app import create_dashboard
+
+from aioq.app import Aarq
+from aioq.dashboard.app import create_dashboard
 
 # ---------------------------------------------------------------------------
 # Helpers

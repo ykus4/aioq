@@ -1,8 +1,9 @@
 import fakeredis.aioredis
 import pytest
 import redis.asyncio as aioredis
-from src.aioq.backends.redis import RedisBroker
-from src.aioq.models import Job, JobStatus
+
+from aioq.backends.redis import RedisBroker
+from aioq.models import Job, JobStatus
 
 
 @pytest.fixture

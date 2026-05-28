@@ -55,16 +55,3 @@ def make_registry(collector: AioqCollector) -> CollectorRegistry:
     registry = CollectorRegistry(auto_describe=True)
     registry.register(collector)
     return registry
-
-
-# Module-level singletons used by the dashboard endpoint.
-_collector = AioqCollector()
-_registry = make_registry(_collector)
-
-
-def get_collector() -> AioqCollector:
-    return _collector
-
-
-def get_registry() -> CollectorRegistry:
-    return _registry
