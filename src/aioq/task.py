@@ -44,6 +44,7 @@ class TaskDef:
         defer_by: float | None = None,
         defer_until: datetime | None = None,
         priority: int | None = None,
+        depends_on: list[str] | None = None,
         **kwargs: Any,
     ) -> Job:
         """Enqueue this task and return the Job."""
@@ -64,6 +65,7 @@ class TaskDef:
             run_at=run_at,
             priority=priority if priority is not None else self.priority,
             dead_letter_queue=self.dead_letter_queue,
+            depends_on=depends_on or [],
         )
         await self.app.broker.enqueue(job)
         return job

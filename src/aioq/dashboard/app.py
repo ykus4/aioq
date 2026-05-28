@@ -53,8 +53,7 @@ def create_dashboard(app: Aarq) -> FastAPI:
         stats = await broker.queue_stats()
         workers = await broker.list_workers()
         return templates.TemplateResponse(
-            "index.html",
-            {"request": request, "stats": stats, "workers": workers},
+            request, "index.html", {"stats": stats, "workers": workers}
         )
 
     @dashboard.get("/jobs", response_class=HTMLResponse)
@@ -75,9 +74,9 @@ def create_dashboard(app: Aarq) -> FastAPI:
         )
         stats = await broker.queue_stats()
         return templates.TemplateResponse(
+            request,
             "jobs.html",
             {
-                "request": request,
                 "jobs": jobs,
                 "stats": stats,
                 "current_queue": queue,
@@ -91,10 +90,7 @@ def create_dashboard(app: Aarq) -> FastAPI:
     @dashboard.get("/jobs/{job_id}", response_class=HTMLResponse)
     async def job_detail(request: Request, job_id: str):
         job = await app.broker.get_job(job_id)
-        return templates.TemplateResponse(
-            "job_detail.html",
-            {"request": request, "job": job},
-        )
+        return templates.TemplateResponse(request, "job_detail.html", {"job": job})
 
     # ------------------------------------------------------------------
     # SSE — real-time stats push
@@ -167,6 +163,16 @@ def create_dashboard(app: Aarq) -> FastAPI:
                 detail="Job cannot be retried (not in failed/cancelled state or not found)",
             )
         return {"retried": True, "job_id": job_id}
+
+    @dashboard.post("/api/jobs/{job_id}/replay")
+    async def api_replay_job(job_id: str):
+        replayed = await app.broker.replay_dead_job(job_id)
+        if not replayed:
+            raise HTTPException(
+                status_code=409,
+                detail="Job cannot be replayed (not in dead state or not found)",
+            )
+        return {"replayed": True, "job_id": job_id}
 
     # ------------------------------------------------------------------
     # Prometheus metrics
