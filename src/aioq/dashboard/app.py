@@ -5,13 +5,22 @@ import json
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ..app import Aarq
 from ..models import JobStatus
+
+try:
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+    from ..metrics import get_collector, get_registry
+
+    _PROMETHEUS_AVAILABLE = True
+except ImportError:
+    _PROMETHEUS_AVAILABLE = False
 
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
@@ -128,15 +137,11 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
     async def api_job(job_id: str):
         job = await app.broker.get_job(job_id)
         if job is None:
-            from fastapi import HTTPException
-
             raise HTTPException(status_code=404, detail="Job not found")
         return job.model_dump_json_safe()
 
     @dashboard.post("/api/jobs/{job_id}/cancel")
     async def api_cancel_job(job_id: str):
-        from fastapi import HTTPException
-
         cancelled = await app.broker.cancel_job(job_id)
         if not cancelled:
             raise HTTPException(
@@ -147,8 +152,6 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
 
     @dashboard.post("/api/jobs/{job_id}/retry")
     async def api_retry_job(job_id: str):
-        from fastapi import HTTPException
-
         retried = await app.broker.retry_job(job_id)
         if not retried:
             raise HTTPException(
@@ -156,5 +159,19 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
                 detail="Job cannot be retried (not in failed/cancelled state or not found)",
             )
         return {"retried": True, "job_id": job_id}
+
+    # ------------------------------------------------------------------
+    # Prometheus metrics
+    # ------------------------------------------------------------------
+
+    @dashboard.get("/metrics")
+    async def metrics_endpoint():
+        if not _PROMETHEUS_AVAILABLE:
+            raise HTTPException(status_code=501, detail="prometheus-client not installed")
+
+        collector = get_collector()
+        await collector.update(app.broker)
+        output = generate_latest(get_registry())
+        return Response(content=output, media_type=CONTENT_TYPE_LATEST)
 
     return dashboard
