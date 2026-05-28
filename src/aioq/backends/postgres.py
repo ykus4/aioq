@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 import time
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 try:
@@ -161,6 +160,7 @@ class PostgresBroker(BaseBroker):
             if row:
                 return self._row_to_job(row)
             import asyncio
+
             await asyncio.sleep(0.5)
         return None
 
@@ -252,7 +252,7 @@ class PostgresBroker(BaseBroker):
 
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
-                f"SELECT * FROM aioq_jobs {where} ORDER BY enqueued_at DESC LIMIT ${len(params)-1} OFFSET ${len(params)}",
+                f"SELECT * FROM aioq_jobs {where} ORDER BY enqueued_at DESC LIMIT ${len(params) - 1} OFFSET ${len(params)}",
                 *params,
             )
         return [self._row_to_job(r) for r in rows]
@@ -298,12 +298,10 @@ class PostgresBroker(BaseBroker):
 
     async def deregister_worker(self, worker_id: str) -> None:
         async with self.pool.acquire() as conn:
-            await conn.execute(
-                "DELETE FROM aioq_workers WHERE worker_id = $1", worker_id
-            )
+            await conn.execute("DELETE FROM aioq_workers WHERE worker_id = $1", worker_id)
 
     async def list_workers(self) -> list[dict]:
-        cutoff = datetime.now(timezone.utc).replace(tzinfo=None).timestamp() - _WORKER_TTL
+        cutoff = datetime.now(UTC).replace(tzinfo=None).timestamp() - _WORKER_TTL
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("SELECT * FROM aioq_workers")
         workers = []

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timezone, timedelta
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, overload
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
 from .models import Job
 
@@ -16,7 +16,7 @@ class TaskDef:
     def __init__(
         self,
         fn: Callable,
-        app: "Aarq",
+        app: Aarq,
         queue: str,
         retries: int,
         retry_delay: float,
@@ -44,7 +44,7 @@ class TaskDef:
         """Enqueue this task and return the Job."""
         run_at: datetime | None = None
         if defer_by is not None:
-            run_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(seconds=defer_by)
+            run_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(seconds=defer_by)
         elif defer_until is not None:
             run_at = defer_until
 

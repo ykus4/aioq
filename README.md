@@ -1,6 +1,6 @@
 # aioq
 
-Async job queue for Python with a built-in real-time dashboard.  
+Async job queue for Python with a built-in real-time dashboard.
 Inspired by [arq](https://github.com/python-arq/arq), built for multiple backends and better observability.
 
 ## Features
@@ -142,7 +142,7 @@ broker = PostgresBroker(
 app = Aarq(broker=broker)
 ```
 
-Tables (`aioq_jobs`, `aioq_workers`) are created automatically on first connect.  
+Tables (`aioq_jobs`, `aioq_workers`) are created automatically on first connect.
 Uses `SELECT ... FOR UPDATE SKIP LOCKED` for safe concurrent dequeue.
 
 ## Dashboard

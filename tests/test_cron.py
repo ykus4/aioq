@@ -1,4 +1,3 @@
-import pytest
 from src.aioq.app import Aarq
 from src.aioq.backends.redis import RedisBroker
 from src.aioq.cron import CronDef
@@ -26,5 +25,6 @@ def test_cron_next_run():
         pass
 
     import time
+
     next_ts = app._crons[0].next_run()
     assert next_ts > time.time()

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -129,12 +129,14 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
         job = await app.broker.get_job(job_id)
         if job is None:
             from fastapi import HTTPException
+
             raise HTTPException(status_code=404, detail="Job not found")
         return job.model_dump_json_safe()
 
     @dashboard.post("/api/jobs/{job_id}/cancel")
     async def api_cancel_job(job_id: str):
         from fastapi import HTTPException
+
         cancelled = await app.broker.cancel_job(job_id)
         if not cancelled:
             raise HTTPException(
@@ -146,6 +148,7 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
     @dashboard.post("/api/jobs/{job_id}/retry")
     async def api_retry_job(job_id: str):
         from fastapi import HTTPException
+
         retried = await app.broker.retry_job(job_id)
         if not retried:
             raise HTTPException(
