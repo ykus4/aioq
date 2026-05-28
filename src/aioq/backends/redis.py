@@ -16,6 +16,7 @@ from .base import BaseBroker
 #   aioq:jobs:status:{status}      - SET   (job ids by status)
 #   aioq:jobs:queue:{queue}        - SET   (job ids by queue)
 #   aioq:workers                   - HASH  (worker_id -> JSON info)
+#   aioq:job:{id}:dependents       - SET   (job ids that depend on this job)
 
 _PREFIX = "aioq"
 
@@ -93,6 +94,25 @@ class RedisBroker(BaseBroker):
 
         await pipe.execute()
 
+    async def enqueue_many(self, jobs: list[Job]) -> None:
+        """Enqueue multiple jobs using a single pipeline round-trip."""
+        if not jobs:
+            return
+        pipe = self.redis.pipeline()
+        for job in jobs:
+            data = json.dumps(job.model_dump_json_safe())
+            pipe.set(_job_key(job.id), data)
+            pipe.sadd(f"{_PREFIX}:jobs:all", job.id)
+            pipe.sadd(_status_set(job.status), job.id)
+            pipe.sadd(_queue_set(job.queue), job.id)
+
+            if job.run_at and job.run_at > datetime.now(UTC):
+                score = job.run_at.timestamp()
+                pipe.zadd(f"{_PREFIX}:queue:{job.queue}:deferred", {job.id: score})
+            else:
+                pipe.lpush(_queue_key(job.queue), job.id)
+        await pipe.execute()
+
     async def _promote_deferred(self, queue: str, now: float) -> None:
         """Move due deferred jobs into the pending list using a Lua script for atomicity."""
         deferred_key = f"{_PREFIX}:queue:{queue}:deferred"
@@ -140,6 +160,9 @@ class RedisBroker(BaseBroker):
             if old.status != job.status:
                 pipe.srem(_status_set(old.status), job.id)
                 pipe.sadd(_status_set(job.status), job.id)
+            if old.queue != job.queue:
+                pipe.srem(_queue_set(old.queue), job.id)
+                pipe.sadd(_queue_set(job.queue), job.id)
 
         data = json.dumps(job.model_dump_json_safe())
         pipe.set(_job_key(job.id), data)
