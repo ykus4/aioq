@@ -8,7 +8,9 @@ from typing import Any
 try:
     import asyncpg
 except ImportError as e:
-    raise ImportError("asyncpg is required for PostgreSQL broker: pip install asyncpg") from e
+    raise ImportError(
+        "asyncpg is required for PostgreSQL broker: pip install asyncpg"
+    ) from e
 
 from ..models import Job, JobStatus
 from .base import BaseBroker
@@ -298,7 +300,9 @@ class PostgresBroker(BaseBroker):
 
     async def deregister_worker(self, worker_id: str) -> None:
         async with self.pool.acquire() as conn:
-            await conn.execute("DELETE FROM aioq_workers WHERE worker_id = $1", worker_id)
+            await conn.execute(
+                "DELETE FROM aioq_workers WHERE worker_id = $1", worker_id
+            )
 
     async def list_workers(self) -> list[dict]:
         cutoff = datetime.now(UTC).replace(tzinfo=None).timestamp() - _WORKER_TTL

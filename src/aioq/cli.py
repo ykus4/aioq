@@ -34,7 +34,8 @@ def worker(app_path: str, queue: tuple, concurrency: int, log_level: str):
     APP_PATH: dotted path to Aarq instance, e.g. myapp.tasks:app
     """
     logging.basicConfig(
-        level=log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+        level=log_level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
     app: Aarq = _load(app_path)  # type: ignore[assignment]

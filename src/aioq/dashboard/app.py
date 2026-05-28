@@ -24,7 +24,9 @@ def create_dashboard(app: Aarq, prefix: str = "/dashboard") -> FastAPI:
     templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
     if _STATIC_DIR.exists():
-        dashboard.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+        dashboard.mount(
+            "/static", StaticFiles(directory=str(_STATIC_DIR)), name="static"
+        )
 
     # ------------------------------------------------------------------
     # Pages

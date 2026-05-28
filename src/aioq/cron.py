@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING
 try:
     from croniter import croniter
 except ImportError as e:
-    raise ImportError("croniter is required for cron support: pip install croniter") from e
+    raise ImportError(
+        "croniter is required for cron support: pip install croniter"
+    ) from e
 
 if TYPE_CHECKING:
     from .app import Aarq
