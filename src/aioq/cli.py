@@ -58,6 +58,11 @@ def dashboard(app_path: str, host: str, port: int, reload: bool):
 
     app: Aarq = _load(app_path)  # type: ignore[assignment]
 
+    if not app.dashboard_enabled:
+        raise click.ClickException(
+            "Dashboard is disabled for this Aarq instance (dashboard_enabled=False)."
+        )
+
     async def lifespan(fastapi_app):
         await app.broker.connect()
         yield

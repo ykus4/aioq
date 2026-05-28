@@ -2,6 +2,16 @@
 
 aioq ships with a FastAPI-based dashboard that provides real-time visibility into your queues, workers, and jobs.
 
+## Enabling and disabling
+
+The dashboard is enabled by default. Set `dashboard_enabled=False` on the `Aarq` instance to disable it:
+
+```python
+app = Aarq(broker=broker, dashboard_enabled=False)
+```
+
+When disabled, `aioq dashboard tasks:app` exits with an error and `create_dashboard(app)` raises `RuntimeError`. This is useful for production deployments where you want to expose the dashboard selectively.
+
 ## Standalone mode
 
 ```bash

@@ -27,6 +27,10 @@ _STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_dashboard(app: Aarq) -> FastAPI:
+    if not app.dashboard_enabled:
+        raise RuntimeError(
+            "Dashboard is disabled for this Aarq instance (dashboard_enabled=False)."
+        )
     """Create and return a FastAPI app serving the aioq dashboard."""
 
     dashboard = FastAPI(title="aioq dashboard")

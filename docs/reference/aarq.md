@@ -11,9 +11,19 @@ from aioq.backends import RedisBroker
 app = Aarq(broker=RedisBroker())
 ```
 
-| Parameter | Type | Description |
-|---|---|---|
-| `broker` | `BaseBroker` | Broker instance to use for all operations |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `broker` | `BaseBroker` | — | Broker instance to use for all operations |
+| `dashboard_enabled` | `bool` | `True` | Set to `False` to disable the dashboard |
+
+```python
+# Disable the dashboard (e.g. in production)
+app = Aarq(broker=RedisBroker(), dashboard_enabled=False)
+```
+
+When `dashboard_enabled=False`:
+- `aioq dashboard tasks:app` exits with an error
+- `create_dashboard(app)` raises `RuntimeError`
 
 ## `@app.task(...)`
 
@@ -26,6 +36,8 @@ Register an async function as a task.
     retry_delay: float = 5.0,
     save_result: bool = False,
     result_ttl: int = 3600,
+    priority: int = 0,
+    dead_letter_queue: str | None = None,
 )
 async def my_task(ctx, ...): ...
 ```
