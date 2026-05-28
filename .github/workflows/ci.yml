@@ -18,19 +18,11 @@ jobs:
         with:
           version: "latest"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dev dependencies
-        run: uv sync --extra dev
-
       - name: Run ruff lint
-        run: uv run ruff check .
+        run: uvx ruff check .
 
       - name: Run ruff format check
-        run: uv run ruff format --check .
+        run: uvx ruff format --check .
 
   test:
     name: Test (Python ${{ matrix.python-version }})
