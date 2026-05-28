@@ -87,3 +87,27 @@ The dashboard exposes a REST API for programmatic access or HTMX partial updates
 ```json
 data: {"stats": {"default": {"pending": 3, "running": 1}}, "workers": [...]}
 ```
+
+## Prometheus metrics
+
+If `prometheus_client` is installed (`pip install "aioq[prometheus]"`), the dashboard exposes a `/metrics` endpoint compatible with Prometheus scraping:
+
+```
+GET /metrics
+```
+
+Metrics exposed:
+
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `aioq_jobs_total` | Gauge | `queue`, `status` | Job count per queue and status |
+| `aioq_workers_total` | Gauge | — | Total registered worker count |
+
+Configure Prometheus to scrape the dashboard:
+
+```yaml
+scrape_configs:
+  - job_name: aioq
+    static_configs:
+      - targets: ["localhost:8080"]
+```

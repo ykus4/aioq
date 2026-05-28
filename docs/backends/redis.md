@@ -35,13 +35,18 @@ All keys are prefixed with `aioq:`:
 
 | Key | Type | Description |
 |---|---|---|
-| `aioq:queue:{queue}:pending` | List | Active pending job IDs (LPUSH / BRPOP) |
+| `aioq:queue:{queue}:p{0\|5\|10}:pending` | List | Active pending job IDs per priority tier (LPUSH / BRPOP) |
 | `aioq:queue:{queue}:deferred` | Sorted Set | Deferred job IDs (score = unix timestamp) |
 | `aioq:job:{id}` | String | JSON-serialised job data |
 | `aioq:jobs:all` | Set | All known job IDs |
 | `aioq:jobs:status:{status}` | Set | Job IDs by status |
 | `aioq:jobs:queue:{queue}` | Set | Job IDs by queue |
+| `aioq:job:{id}:dependents` | Set | IDs of jobs waiting on this job to complete |
 | `aioq:workers` | Hash | Worker info keyed by worker ID |
+
+## Priority queues
+
+Each queue uses three separate lists for priority tiers: `p10` (high), `p5` (medium), `p0` (default). Workers call `BRPOP` on all three lists in highest-first order, so high-priority jobs are always consumed before lower-priority ones in the same queue.
 
 ## Deferred jobs
 

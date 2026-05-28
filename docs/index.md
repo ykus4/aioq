@@ -7,8 +7,13 @@ Inspired by [arq](https://github.com/python-arq/arq), designed for production us
 ## Features
 
 - **Decorator-based API** — `@app.task(...)` and `@app.cron(...)`
-- **Multiple backends** — Redis (built-in), PostgreSQL (`SKIP LOCKED`), extensible via `BaseBroker`
+- **Multiple backends** — Redis (built-in), PostgreSQL (`SKIP LOCKED`), MySQL (`SKIP LOCKED`), extensible via `BaseBroker`
 - **Built-in dashboard** — real-time queue stats, job browser, retry/cancel from UI
+- **Prometheus metrics** — `/metrics` endpoint for Grafana/Alertmanager integration
+- **Priority queues** — per-job priority (0/5/10) processed highest-first
+- **Batch enqueue** — `task.enqueue_many(items)` for efficient bulk submission
+- **Dead letter queue** — configurable DLQ per task; failed jobs move to `dead` status
+- **Job dependencies** — `depends_on=[job_id, ...]` to chain jobs
 - **Deferred jobs** — `defer_by=60` or `defer_until=datetime(...)`
 - **Retry with delay** — configurable `retries` and `retry_delay`
 - **Cron scheduling** — standard cron expressions via `croniter`
@@ -61,10 +66,12 @@ aioq dashboard tasks:app --port 8080
 ## Installation
 
 ```bash
-pip install aioq                   # Redis only
-pip install "aioq[postgres]"       # + PostgreSQL
-pip install "aioq[cron]"           # + cron scheduling
-pip install "aioq[all]"            # everything
+pip install aioq                     # Redis only
+pip install "aioq[postgres]"         # + PostgreSQL
+pip install "aioq[mysql]"            # + MySQL
+pip install "aioq[prometheus]"       # + Prometheus metrics
+pip install "aioq[cron]"             # + cron scheduling
+pip install "aioq[all]"              # everything
 ```
 
 **Requirements:** Python 3.11+

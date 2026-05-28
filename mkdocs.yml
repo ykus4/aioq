@@ -58,6 +58,7 @@ nav:
   - Backends:
     - Redis: backends/redis.md
     - PostgreSQL: backends/postgres.md
+    - MySQL: backends/mysql.md
     - Custom Backend: backends/custom.md
   - API Reference:
     - Aarq: reference/aarq.md
