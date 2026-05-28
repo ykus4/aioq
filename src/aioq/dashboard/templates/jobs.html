@@ -6,7 +6,6 @@
   <p>Browse and filter enqueued jobs</p>
 </div>
 
-<!-- Filter bar -->
 <form class="filter-bar" method="get" action="/jobs">
   <select name="queue" onchange="this.form.submit()">
     <option value="">All queues</option>
@@ -20,9 +19,12 @@
       <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
     {% endfor %}
   </select>
+  {% if current_queue or current_status %}
+  <a href="/jobs" style="font-size:0.8rem; color:var(--muted); padding:0.3rem 0.5rem;">✕ clear</a>
+  {% endif %}
 </form>
 
-<div class="card table-wrap">
+<div class="card table-wrap" style="padding:0;">
   <table>
     <thead>
       <tr>
@@ -47,14 +49,14 @@
   </table>
 </div>
 
-<!-- Pagination -->
-<div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+<div class="pagination">
   {% if page > 1 %}
-  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page - 1 }}" style="padding:0.3rem 0.75rem; background:#1e293b; border-radius:6px; font-size:0.85rem;">← Prev</a>
+  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page - 1 }}">← Prev</a>
   {% endif %}
-  <span style="color:#64748b; font-size:0.85rem;">Page {{ page }}</span>
+  <span>Page {{ page }}</span>
   {% if jobs|length == per_page %}
-  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page + 1 }}" style="padding:0.3rem 0.75rem; background:#1e293b; border-radius:6px; font-size:0.85rem;">Next →</a>
+  <a href="/jobs?queue={{ current_queue or '' }}&status={{ current_status or '' }}&page={{ page + 1 }}">Next →</a>
   {% endif %}
 </div>
+
 {% endblock %}

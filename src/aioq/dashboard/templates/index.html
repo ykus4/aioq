@@ -6,7 +6,6 @@
   <p>Real-time queue and worker stats</p>
 </div>
 
-<!-- Stats updated via SSE -->
 <div id="sse-stats"
      hx-ext="sse"
      sse-connect="/sse/stats"
@@ -20,18 +19,22 @@
     <div class="card">
       <div class="card-title">{{ queue }}</div>
       <div class="stat-value">{{ total }}</div>
-      <div style="margin-top:0.5rem; display:flex; gap:0.4rem; flex-wrap:wrap;">
+      <div style="margin-top:0.6rem; display:flex; gap:0.35rem; flex-wrap:wrap;">
         {% for status, count in counts.items() %}
           <span class="badge badge-{{ status }}">{{ status }} {{ count }}</span>
         {% endfor %}
       </div>
     </div>
   {% else %}
-    <div class="card" style="grid-column: 1/-1; color:#64748b;">No queues yet.</div>
+    <div class="card" style="grid-column:1/-1; color:var(--muted); font-size:0.875rem;">No queues yet.</div>
   {% endfor %}
 </div>
 
-<h2 style="font-size:1.1rem; font-weight:600; color:#f8fafc; margin-bottom:1rem;">Workers</h2>
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+  <h2 style="font-size:0.875rem; font-weight:600; color:var(--text);">Workers</h2>
+  <span id="worker-count" style="font-size:0.78rem; color:var(--muted);">{{ workers|length }} registered</span>
+</div>
+
 <div id="worker-list" class="card">
   {% if workers %}
   <table>
@@ -39,7 +42,6 @@
       <tr>
         <th>Worker ID</th>
         <th>Queues</th>
-        <th>Registered</th>
         <th>Last heartbeat</th>
         <th>Status</th>
       </tr>
@@ -47,15 +49,14 @@
     <tbody>
       {% for w in workers %}
       <tr>
-        <td style="font-family:monospace; font-size:0.8rem;">{{ w.worker_id[:16] }}…</td>
-        <td>{{ w.queues | join(", ") }}</td>
-        <td style="font-size:0.8rem; color:#64748b;">{{ w.registered_at }}</td>
-        <td style="font-size:0.8rem; color:#64748b;">{{ w.last_heartbeat }}</td>
+        <td><code style="font-size:0.78rem;">{{ w.worker_id[:16] }}…</code></td>
+        <td style="color:var(--text-dim);">{{ w.queues | join(", ") }}</td>
+        <td style="font-size:0.8rem; color:var(--muted);">{{ w.last_heartbeat }}</td>
         <td>
           {% if w.alive %}
-            <span class="dot dot-alive"></span>alive
+            <span class="dot dot-alive"></span><span style="color:#4ade80; font-size:0.82rem;">alive</span>
           {% else %}
-            <span class="dot dot-dead"></span>dead
+            <span class="dot dot-dead"></span><span style="color:var(--muted); font-size:0.82rem;">dead</span>
           {% endif %}
         </td>
       </tr>
@@ -63,12 +64,11 @@
     </tbody>
   </table>
   {% else %}
-    <p style="color:#64748b; font-size:0.875rem;">No workers registered.</p>
+    <p style="color:var(--muted); font-size:0.875rem;">No workers registered.</p>
   {% endif %}
 </div>
 
 <script>
-// SSE handler — update stats cards in-place
 document.getElementById("sse-stats").addEventListener("message", function(e) {
   const data = JSON.parse(e.data);
   refreshStats(data.stats, data.workers);
@@ -83,33 +83,36 @@ function refreshStats(stats, workers) {
     const total = Object.values(counts).reduce((a,b)=>a+b, 0);
     const badges = Object.entries(counts)
       .map(([s,c]) => `<span class="badge badge-${s}">${s} ${c}</span>`)
-      .join(" ");
+      .join("");
     html += `<div class="card">
       <div class="card-title">${queue}</div>
       <div class="stat-value">${total}</div>
-      <div style="margin-top:0.5rem; display:flex; gap:0.4rem; flex-wrap:wrap;">${badges}</div>
+      <div style="margin-top:0.6rem;display:flex;gap:0.35rem;flex-wrap:wrap;">${badges}</div>
     </div>`;
   }
   grid.innerHTML = html;
 
   const workerDiv = document.getElementById("worker-list");
+  const workerCount = document.getElementById("worker-count");
+  if (workerCount) workerCount.textContent = `${workers ? workers.length : 0} registered`;
+
   if (!workers || workers.length === 0) {
-    workerDiv.innerHTML = '<p style="color:#64748b; font-size:0.875rem;">No workers registered.</p>';
+    workerDiv.innerHTML = '<p style="color:var(--muted);font-size:0.875rem;">No workers registered.</p>';
     return;
   }
-  let whtml = '<table><thead><tr><th>Worker ID</th><th>Queues</th><th>Last heartbeat</th><th>Status</th></tr></thead><tbody>';
+  let whtml = `<table><thead><tr><th>Worker ID</th><th>Queues</th><th>Last heartbeat</th><th>Status</th></tr></thead><tbody>`;
   for (const w of workers) {
     const dot = w.alive
-      ? '<span class="dot dot-alive"></span>alive'
-      : '<span class="dot dot-dead"></span>dead';
+      ? '<span class="dot dot-alive"></span><span style="color:#4ade80;font-size:0.82rem;">alive</span>'
+      : '<span class="dot dot-dead"></span><span style="color:var(--muted);font-size:0.82rem;">dead</span>';
     whtml += `<tr>
-      <td style="font-family:monospace;font-size:0.8rem">${w.worker_id.slice(0,16)}…</td>
-      <td>${w.queues.join(", ")}</td>
-      <td style="font-size:0.8rem;color:#64748b">${w.last_heartbeat}</td>
+      <td><code style="font-size:0.78rem;">${w.worker_id.slice(0,16)}…</code></td>
+      <td style="color:var(--text-dim);">${w.queues.join(", ")}</td>
+      <td style="font-size:0.8rem;color:var(--muted);">${w.last_heartbeat}</td>
       <td>${dot}</td>
     </tr>`;
   }
-  whtml += '</tbody></table>';
+  whtml += "</tbody></table>";
   workerDiv.innerHTML = whtml;
 }
 </script>

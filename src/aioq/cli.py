@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import logging
 
@@ -63,13 +64,13 @@ def dashboard(app_path: str, host: str, port: int, reload: bool):
             "Dashboard is disabled for this Aarq instance (dashboard_enabled=False)."
         )
 
+    @contextlib.asynccontextmanager
     async def lifespan(fastapi_app):
         await app.broker.connect()
         yield
         await app.broker.disconnect()
 
     dash = create_dashboard(app)
-    # Inject lifespan
     dash.router.lifespan_context = lifespan
 
     uvicorn.run(dash, host=host, port=port, reload=reload)
