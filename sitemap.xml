@@ -2,70 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://ykus4.github.io/aioq/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/backends/custom/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/backends/mysql/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/backends/postgres/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/backends/redis/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/getting-started/installation/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/getting-started/quickstart/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/guide/cron/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/guide/dashboard/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/guide/enqueueing/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/guide/tasks/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/guide/workers/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/reference/aarq/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/reference/broker/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/reference/models/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/reference/taskdef/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
     <url>
          <loc>https://ykus4.github.io/aioq/reference/worker/</loc>
-         <lastmod>2026-05-28</lastmod>
+         <lastmod>2026-06-12</lastmod>
     </url>
 </urlset>
