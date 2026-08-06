@@ -3,72 +3,63 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from collections.abc import Collection
 from datetime import UTC, datetime
-from typing import Any
 
 try:
     import asyncpg
-except ImportError as e:
+except ImportError as e:  # pragma: no cover - depends on install extras
     raise ImportError("asyncpg is required for PostgreSQL broker: pip install asyncpg") from e
 
+from ..constants import CRON_LOCK_TTL, DEQUEUE_TIMEOUT, SQL_POLL_INTERVAL
 from ..models import Job, JobStatus
-from .base import BaseBroker
+from .sql import SQLBroker
 
-# Table DDL (auto-created on connect if not exists):
-#
-#   aioq_jobs
-#     id            TEXT PRIMARY KEY
-#     task_name     TEXT NOT NULL
-#     queue         TEXT NOT NULL DEFAULT 'default'
-#     status        TEXT NOT NULL DEFAULT 'pending'
-#     args          JSONB NOT NULL DEFAULT '[]'
-#     kwargs        JSONB NOT NULL DEFAULT '{}'
-#     retries       INT NOT NULL DEFAULT 0
-#     max_retries   INT NOT NULL DEFAULT 0
-#     retry_delay   FLOAT NOT NULL DEFAULT 0
-#     enqueued_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-#     started_at    TIMESTAMPTZ
-#     completed_at  TIMESTAMPTZ
-#     run_at        TIMESTAMPTZ
-#     result        JSONB
-#     error         TEXT
-#     worker_id     TEXT
-#     priority      INT NOT NULL DEFAULT 0
-#     save_result   BOOLEAN NOT NULL DEFAULT FALSE
-#     depends_on    JSONB NOT NULL DEFAULT '[]'
-#
-#   aioq_workers
-#     worker_id       TEXT PRIMARY KEY
-#     queues          JSONB NOT NULL DEFAULT '[]'
-#     registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-#     last_heartbeat  TIMESTAMPTZ NOT NULL DEFAULT now()
+# Statuses that dequeue() will claim. `retrying` is included because a retry is
+# stored as the same row rescheduled via run_at, not as a new job.
+_RUNNABLE = ("pending", "retrying")
 
 _INIT_SQL = """
 CREATE TABLE IF NOT EXISTS aioq_jobs (
-    id            TEXT PRIMARY KEY,
-    task_name     TEXT NOT NULL,
-    queue         TEXT NOT NULL DEFAULT 'default',
-    status        TEXT NOT NULL DEFAULT 'pending',
-    args          JSONB NOT NULL DEFAULT '[]',
-    kwargs        JSONB NOT NULL DEFAULT '{}',
-    retries       INT NOT NULL DEFAULT 0,
-    max_retries   INT NOT NULL DEFAULT 0,
-    retry_delay   FLOAT NOT NULL DEFAULT 0,
-    enqueued_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    started_at    TIMESTAMPTZ,
-    completed_at  TIMESTAMPTZ,
-    run_at        TIMESTAMPTZ,
-    result        JSONB,
-    error         TEXT,
-    worker_id     TEXT,
-    priority      INT NOT NULL DEFAULT 0,
-    save_result   BOOLEAN NOT NULL DEFAULT FALSE,
-    depends_on    JSONB NOT NULL DEFAULT '[]'
+    id                TEXT PRIMARY KEY,
+    task_name         TEXT NOT NULL,
+    queue             TEXT NOT NULL DEFAULT 'default',
+    status            TEXT NOT NULL DEFAULT 'pending',
+    args              JSONB NOT NULL DEFAULT '[]',
+    kwargs            JSONB NOT NULL DEFAULT '{}',
+    retries           INT NOT NULL DEFAULT 0,
+    max_retries       INT NOT NULL DEFAULT 0,
+    retry_delay       FLOAT NOT NULL DEFAULT 0,
+    retry_backoff     BOOLEAN NOT NULL DEFAULT FALSE,
+    retry_backoff_max FLOAT NOT NULL DEFAULT 600,
+    timeout           FLOAT,
+    enqueued_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    started_at        TIMESTAMPTZ,
+    completed_at      TIMESTAMPTZ,
+    run_at            TIMESTAMPTZ,
+    result            JSONB,
+    result_ttl        INT NOT NULL DEFAULT 3600,
+    error             TEXT,
+    worker_id         TEXT,
+    priority          INT NOT NULL DEFAULT 0,
+    save_result       BOOLEAN NOT NULL DEFAULT FALSE,
+    dead_letter_queue TEXT,
+    depends_on        JSONB NOT NULL DEFAULT '[]'
 );
+
+-- Idempotent upgrades for tables created by an older aioq.
+ALTER TABLE aioq_jobs ADD COLUMN IF NOT EXISTS retry_backoff BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE aioq_jobs ADD COLUMN IF NOT EXISTS retry_backoff_max FLOAT NOT NULL DEFAULT 600;
+ALTER TABLE aioq_jobs ADD COLUMN IF NOT EXISTS timeout FLOAT;
+ALTER TABLE aioq_jobs ADD COLUMN IF NOT EXISTS result_ttl INT NOT NULL DEFAULT 3600;
+ALTER TABLE aioq_jobs ADD COLUMN IF NOT EXISTS dead_letter_queue TEXT;
 
 CREATE INDEX IF NOT EXISTS aioq_jobs_queue_status ON aioq_jobs (queue, status);
 CREATE INDEX IF NOT EXISTS aioq_jobs_run_at ON aioq_jobs (run_at) WHERE run_at IS NOT NULL;
-CREATE INDEX IF NOT EXISTS aioq_jobs_priority ON aioq_jobs (queue, priority DESC, enqueued_at) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS aioq_jobs_claim
+    ON aioq_jobs (queue, priority DESC, enqueued_at)
+    WHERE status IN ('pending', 'retrying');
+CREATE INDEX IF NOT EXISTS aioq_jobs_depends_on ON aioq_jobs USING GIN (depends_on);
 
 CREATE TABLE IF NOT EXISTS aioq_workers (
     worker_id       TEXT PRIMARY KEY,
@@ -76,12 +67,23 @@ CREATE TABLE IF NOT EXISTS aioq_workers (
     registered_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_heartbeat  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS aioq_cron_locks (
+    lock_key    TEXT PRIMARY KEY,
+    acquired_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at  TIMESTAMPTZ NOT NULL
+);
 """
 
-_WORKER_TTL = 30  # seconds
+_JOB_COLUMNS = """
+    id, task_name, queue, status, args, kwargs,
+    retries, max_retries, retry_delay, retry_backoff, retry_backoff_max, timeout,
+    enqueued_at, run_at, priority, save_result, result_ttl,
+    dead_letter_queue, depends_on
+"""
 
 
-class PostgresBroker(BaseBroker):
+class PostgresBroker(SQLBroker):
     def __init__(self, dsn: str, min_size: int = 2, max_size: int = 10):
         self.dsn = dsn
         self.min_size = min_size
@@ -112,45 +114,68 @@ class PostgresBroker(BaseBroker):
 
     async def enqueue(self, job: Job) -> None:
         await self._check_dependencies(job)
+        await self._upsert(job)
+        if job.status == JobStatus.waiting:
+            # A dependency may have completed while we were inserting.
+            await self._promote_if_ready(job)
 
-        async with self.pool.acquire() as conn:
-            await conn.execute(
-                """
-                INSERT INTO aioq_jobs
-                    (id, task_name, queue, status, args, kwargs,
-                     retries, max_retries, retry_delay,
-                     enqueued_at, run_at, priority, save_result, depends_on)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-                ON CONFLICT (id) DO UPDATE SET
-                    status = EXCLUDED.status,
-                    retries = EXCLUDED.retries,
-                    run_at = EXCLUDED.run_at,
-                    priority = EXCLUDED.priority,
-                    depends_on = EXCLUDED.depends_on
-                """,
-                job.id,
-                job.task_name,
-                job.queue,
-                job.status.value,
-                json.dumps(job.args),
-                json.dumps(job.kwargs),
-                job.retries,
-                job.max_retries,
-                job.retry_delay,
-                job.enqueued_at,
-                job.run_at,
-                job.priority,
-                job.save_result,
-                json.dumps(job.depends_on),
-            )
+    async def enqueue_many(self, jobs: list[Job]) -> None:
+        for job in jobs:
+            await self._check_dependencies(job)
+        async with self.pool.acquire() as conn, conn.transaction():
+            for job in jobs:
+                await self._upsert(job, conn=conn)
+        for job in jobs:
+            if job.status == JobStatus.waiting:
+                await self._promote_if_ready(job)
 
-    async def dequeue(self, queues: list[str], timeout: float = 2.0) -> Job | None:
+    async def _upsert(self, job: Job, conn: asyncpg.Connection | None = None) -> None:
+        sql = f"""
+            INSERT INTO aioq_jobs ({_JOB_COLUMNS})
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+            ON CONFLICT (id) DO UPDATE SET
+                status     = EXCLUDED.status,
+                queue      = EXCLUDED.queue,
+                retries    = EXCLUDED.retries,
+                run_at     = EXCLUDED.run_at,
+                priority   = EXCLUDED.priority,
+                depends_on = EXCLUDED.depends_on
         """
-        SKIP LOCKED ensures multiple workers don't pick up the same job.
-        Polls until a job is available or timeout expires.
+        params = (
+            job.id,
+            job.task_name,
+            job.queue,
+            job.status.value,
+            json.dumps(job.args),
+            json.dumps(job.kwargs),
+            job.retries,
+            job.max_retries,
+            job.retry_delay,
+            job.retry_backoff,
+            job.retry_backoff_max,
+            job.timeout,
+            job.enqueued_at,
+            job.run_at,
+            job.priority,
+            job.save_result,
+            job.result_ttl,
+            job.dead_letter_queue,
+            json.dumps(job.depends_on),
+        )
+        if conn is not None:
+            await conn.execute(sql, *params)
+        else:
+            async with self.pool.acquire() as own:
+                await own.execute(sql, *params)
+
+    async def dequeue(self, queues: list[str], timeout: float = DEQUEUE_TIMEOUT) -> Job | None:
+        """Claim one job.
+
+        ``FOR UPDATE SKIP LOCKED`` ensures two workers never claim the same
+        row. Postgres cannot block on a table, so this polls until *timeout*.
         """
         deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
+        while True:
             async with self.pool.acquire() as conn:
                 row = await conn.fetchrow(
                     """
@@ -159,7 +184,7 @@ class PostgresBroker(BaseBroker):
                     WHERE id = (
                         SELECT id FROM aioq_jobs
                         WHERE queue = ANY($1::text[])
-                          AND status = 'pending'
+                          AND status = ANY($2::text[])
                           AND (run_at IS NULL OR run_at <= now())
                         ORDER BY priority DESC, enqueued_at
                         FOR UPDATE SKIP LOCKED
@@ -168,11 +193,13 @@ class PostgresBroker(BaseBroker):
                     RETURNING *
                     """,
                     queues,
+                    list(_RUNNABLE),
                 )
             if row:
-                return self._row_to_job(row)
-            await asyncio.sleep(0.5)
-        return None
+                return self.row_to_job(row)
+            if time.monotonic() + SQL_POLL_INTERVAL >= deadline:
+                return None
+            await asyncio.sleep(SQL_POLL_INTERVAL)
 
     async def update_job(self, job: Job) -> None:
         async with self.pool.acquire() as conn:
@@ -186,7 +213,8 @@ class PostgresBroker(BaseBroker):
                     completed_at = $6,
                     result       = $7,
                     error        = $8,
-                    worker_id    = $9
+                    worker_id    = $9,
+                    run_at       = $10
                 WHERE id = $1
                 """,
                 job.id,
@@ -198,35 +226,11 @@ class PostgresBroker(BaseBroker):
                 json.dumps(job.result) if job.result is not None else None,
                 job.error,
                 job.worker_id,
+                job.run_at,
             )
 
-        # When a job completes, check if any waiting jobs depending on it are now ready
         if job.status == JobStatus.completed:
-            async with self.pool.acquire() as conn:
-                waiting_rows = await conn.fetch(
-                    """
-                    SELECT id, depends_on FROM aioq_jobs
-                    WHERE status = 'waiting'
-                      AND depends_on @> $1::jsonb
-                    """,
-                    json.dumps([job.id]),
-                )
-            for row in waiting_rows:
-                dep_ids = json.loads(row["depends_on"]) if row["depends_on"] else []
-                if not dep_ids:
-                    continue
-                async with self.pool.acquire() as conn:
-                    completed_rows = await conn.fetch(
-                        "SELECT id FROM aioq_jobs WHERE id = ANY($1::text[]) AND status = 'completed'",
-                        dep_ids,
-                    )
-                completed_ids = {r["id"] for r in completed_rows}
-                if set(dep_ids) == completed_ids:
-                    async with self.pool.acquire() as conn:
-                        await conn.execute(
-                            "UPDATE aioq_jobs SET status = 'pending' WHERE id = $1 AND status = 'waiting'",
-                            row["id"],
-                        )
+            await self._resolve_dependents(job.id)
 
     async def retry_job(self, job_id: str) -> bool:
         async with self.pool.acquire() as conn:
@@ -239,7 +243,8 @@ class PostgresBroker(BaseBroker):
                     result       = NULL,
                     started_at   = NULL,
                     completed_at = NULL,
-                    worker_id    = NULL
+                    worker_id    = NULL,
+                    run_at       = NULL
                 WHERE id = $1 AND status IN ('failed', 'cancelled')
                 """,
                 job_id,
@@ -260,7 +265,7 @@ class PostgresBroker(BaseBroker):
     async def get_job(self, job_id: str) -> Job | None:
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow("SELECT * FROM aioq_jobs WHERE id = $1", job_id)
-        return self._row_to_job(row) if row else None
+        return self.row_to_job(row) if row else None
 
     async def list_jobs(
         self,
@@ -269,25 +274,51 @@ class PostgresBroker(BaseBroker):
         limit: int = 100,
         offset: int = 0,
     ) -> list[Job]:
-        conditions = []
-        params: list[Any] = []
-
-        if queue:
-            params.append(queue)
-            conditions.append(f"queue = ${len(params)}")
-        if status:
-            params.append(status.value)
-            conditions.append(f"status = ${len(params)}")
-
-        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        where, params = self.build_filters(queue, status, lambda i: f"${i}")
         params += [limit, offset]
 
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
-                f"SELECT * FROM aioq_jobs {where} ORDER BY enqueued_at DESC LIMIT ${len(params) - 1} OFFSET ${len(params)}",
+                f"SELECT * FROM aioq_jobs {where} "
+                f"ORDER BY enqueued_at DESC LIMIT ${len(params) - 1} OFFSET ${len(params)}",
                 *params,
             )
-        return [self._row_to_job(r) for r in rows]
+        return [self.row_to_job(r) for r in rows]
+
+    # ------------------------------------------------------------------
+    # Dependencies
+    # ------------------------------------------------------------------
+
+    async def _fetch_waiting_dependents(self, job_id: str) -> list[tuple[str, list[str]]]:
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, depends_on FROM aioq_jobs
+                WHERE status = 'waiting' AND depends_on @> $1::jsonb
+                """,
+                json.dumps([job_id]),
+            )
+        return [(r["id"], json.loads(r["depends_on"]) if r["depends_on"] else []) for r in rows]
+
+    async def _count_completed(self, dep_ids: list[str]) -> int:
+        async with self.pool.acquire() as conn:
+            return await conn.fetchval(
+                "SELECT count(*)::int FROM aioq_jobs "
+                "WHERE id = ANY($1::text[]) AND status = 'completed'",
+                dep_ids,
+            )
+
+    async def _mark_waiting_as_pending(self, job_id: str) -> None:
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE aioq_jobs SET status = 'pending' WHERE id = $1 AND status = 'waiting'",
+                job_id,
+            )
+
+    async def _promote_if_ready(self, job: Job) -> None:
+        if await self._all_deps_completed(job.depends_on):
+            await self._mark_waiting_as_pending(job.id)
+            job.status = JobStatus.pending
 
     # ------------------------------------------------------------------
     # Stats
@@ -333,47 +364,52 @@ class PostgresBroker(BaseBroker):
             await conn.execute("DELETE FROM aioq_workers WHERE worker_id = $1", worker_id)
 
     async def list_workers(self) -> list[dict]:
-        cutoff = datetime.now(UTC).timestamp() - _WORKER_TTL
+        now = datetime.now(UTC).timestamp()
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("SELECT * FROM aioq_workers")
-        workers = []
-        for row in rows:
-            hb = row["last_heartbeat"].timestamp()
-            workers.append(
-                {
-                    "worker_id": row["worker_id"],
-                    "queues": json.loads(row["queues"]),
-                    "registered_at": row["registered_at"].isoformat(),
-                    "last_heartbeat": row["last_heartbeat"].isoformat(),
-                    "alive": hb > cutoff,
-                }
+        return [self.worker_row_to_dict(row, now) for row in rows]
+
+    # ------------------------------------------------------------------
+    # Cron coordination
+    # ------------------------------------------------------------------
+
+    async def acquire_cron_lock(self, key: str, ttl: float = CRON_LOCK_TTL) -> bool:
+        async with self.pool.acquire() as conn:
+            # Reclaim the row if a previous holder expired, otherwise the
+            # insert conflicts and nobody fires.
+            result = await conn.execute(
+                """
+                INSERT INTO aioq_cron_locks (lock_key, acquired_at, expires_at)
+                VALUES ($1, now(), now() + ($2 || ' seconds')::interval)
+                ON CONFLICT (lock_key) DO UPDATE SET
+                    acquired_at = now(),
+                    expires_at  = now() + ($2 || ' seconds')::interval
+                WHERE aioq_cron_locks.expires_at <= now()
+                """,
+                key,
+                str(int(ttl)),
             )
-        return workers
+        return result == "INSERT 0 1"
 
     # ------------------------------------------------------------------
-    # Helpers
+    # Maintenance
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _row_to_job(row: asyncpg.Record) -> Job:
-        return Job(
-            id=row["id"],
-            task_name=row["task_name"],
-            queue=row["queue"],
-            status=JobStatus(row["status"]),
-            args=json.loads(row["args"]),
-            kwargs=json.loads(row["kwargs"]),
-            retries=row["retries"],
-            max_retries=row["max_retries"],
-            retry_delay=row["retry_delay"],
-            enqueued_at=row["enqueued_at"],
-            started_at=row["started_at"],
-            completed_at=row["completed_at"],
-            run_at=row["run_at"],
-            result=json.loads(row["result"]) if row["result"] else None,
-            error=row["error"],
-            priority=row["priority"],
-            worker_id=row["worker_id"],
-            save_result=row["save_result"],
-            depends_on=json.loads(row["depends_on"]) if row["depends_on"] else [],
-        )
+    async def purge(
+        self,
+        older_than: float,
+        statuses: Collection[JobStatus] | None = None,
+    ) -> int:
+        cutoff = self._purge_cutoff(older_than)
+        async with self.pool.acquire() as conn:
+            await conn.execute("DELETE FROM aioq_cron_locks WHERE expires_at <= now()")
+            result = await conn.execute(
+                """
+                DELETE FROM aioq_jobs
+                WHERE status = ANY($1::text[])
+                  AND coalesce(completed_at, enqueued_at) <= $2
+                """,
+                self._purge_statuses(statuses),
+                cutoff,
+            )
+        return int(result.rsplit(" ", 1)[-1])

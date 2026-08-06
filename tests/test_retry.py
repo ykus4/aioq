@@ -1,19 +1,4 @@
-import fakeredis.aioredis
-import pytest
-import redis.asyncio as aioredis
-
-from aioq.backends.redis import RedisBroker
 from aioq.models import Job, JobStatus
-
-
-@pytest.fixture
-async def broker(monkeypatch):
-    fake = fakeredis.aioredis.FakeRedis(decode_responses=True)
-    monkeypatch.setattr(aioredis, "from_url", lambda *a, **kw: fake)
-    b = RedisBroker()
-    await b.connect()
-    yield b
-    await b.disconnect()
 
 
 async def test_retry_failed_job(broker):

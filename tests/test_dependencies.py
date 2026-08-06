@@ -1,30 +1,7 @@
 import json
 
-import fakeredis.aioredis
-import pytest
-
-from aioq.backends.redis import RedisBroker, _job_key
+from aioq.backends.redis import _job_key
 from aioq.models import Job, JobStatus
-
-
-@pytest.fixture
-async def broker(monkeypatch):
-    """RedisBroker backed by fakeredis."""
-    import redis.asyncio as aioredis
-
-    fake = fakeredis.aioredis.FakeRedis(decode_responses=True)
-    monkeypatch.setattr(aioredis, "from_url", lambda *a, **kw: fake)
-
-    b = RedisBroker()
-    await b.connect()
-
-    # fakeredis does not support Lua eval; stub out the deferred-promotion step
-    async def _noop_promote(queue: str, now: float) -> None:
-        pass
-
-    monkeypatch.setattr(b, "_promote_deferred", _noop_promote)
-    yield b
-    await b.disconnect()
 
 
 async def test_job_without_deps_runs_immediately(broker):

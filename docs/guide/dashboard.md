@@ -4,10 +4,10 @@ aioq ships with a FastAPI-based dashboard that provides real-time visibility int
 
 ## Enabling and disabling
 
-The dashboard is enabled by default. Set `dashboard_enabled=False` on the `Aarq` instance to disable it:
+The dashboard is enabled by default. Set `dashboard_enabled=False` on the `Aioq` instance to disable it:
 
 ```python
-app = Aarq(broker=broker, dashboard_enabled=False)
+app = Aioq(broker=broker, dashboard_enabled=False)
 ```
 
 When disabled, `aioq dashboard tasks:app` exits with an error and `create_dashboard(app)` raises `RuntimeError`. This is useful for production deployments where you want to expose the dashboard selectively.
@@ -71,6 +71,7 @@ Full metadata for a single job:
 | Started at | When execution began |
 | Completed at | When execution finished |
 | Duration | Wall-clock execution time |
+| Timeout | Configured execution timeout (if any) |
 | Scheduled | `run_at` for deferred jobs |
 | Retries | Current retry count / max retries (dot indicator) |
 | Arguments | JSON-formatted `args` and `kwargs` |
@@ -94,9 +95,14 @@ The dashboard exposes a REST API for programmatic access or HTMX partial updates
 | `GET` | `/api/stats` | Queue stats + worker list |
 | `GET` | `/api/jobs` | Paginated job list (`queue`, `status`, `limit`, `offset`) |
 | `GET` | `/api/jobs/{id}` | Single job detail |
+| `GET` | `/api/dead` | Every dead job, optionally filtered by `queue` |
 | `POST` | `/api/jobs/{id}/cancel` | Cancel a pending/retrying/waiting job |
 | `POST` | `/api/jobs/{id}/retry` | Retry a failed/cancelled job |
 | `POST` | `/api/jobs/{id}/replay` | Replay a dead (DLQ-exhausted) job |
+| `GET` | `/healthz` | Liveness probe — 200 if the broker is reachable, else 503 |
+
+An unknown `?status=` value returns `400`; a mutating endpoint returns `409` when
+the job is not in a state that allows it.
 
 ### SSE endpoint
 
@@ -120,6 +126,7 @@ Metrics exposed:
 |---|---|---|---|
 | `aioq_jobs_total` | Gauge | `queue`, `status` | Job count per queue and status |
 | `aioq_workers_total` | Gauge | — | Total registered worker count |
+| `aioq_workers_alive` | Gauge | — | Workers that heartbeated recently |
 
 Configure Prometheus to scrape the dashboard:
 
@@ -129,3 +136,7 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:8080"]
 ```
+
+These are queue-level gauges read from the broker, so one dashboard covers the
+whole cluster. Per-job counters and duration histograms live in the workers —
+see [Monitoring](monitoring.md).

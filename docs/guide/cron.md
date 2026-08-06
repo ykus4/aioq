@@ -13,10 +13,10 @@ pip install "aioq[cron]"
 ## Defining cron tasks
 
 ```python
-from aioq import Aarq
+from aioq import Aioq
 from aioq.backends import RedisBroker
 
-app = Aarq(broker=RedisBroker())
+app = Aioq(broker=RedisBroker())
 
 
 @app.cron("*/5 * * * *")             # every 5 minutes
@@ -68,19 +68,45 @@ Cron tasks receive a context dict with `worker_id` and `broker`, but **not** `jo
 ```python
 async def my_cron(ctx):
     worker_id = ctx["worker_id"]
-    broker    = ctx["broker"]
+    broker = ctx["broker"]
 ```
 
 ## How it works
 
 The worker runs a background loop that checks the schedule every second. When a cron task is due:
 
-1. It is called directly in the worker's event loop as an `asyncio.Task`
-2. If the task raises an exception, it is logged and the next run proceeds normally
-3. The next run time is computed immediately after firing
+1. The worker tries to claim that occurrence with a broker-held lock
+2. If it wins, the task is called in the worker's event loop as an `asyncio.Task`
+3. If it loses, another worker is already running it, and this worker skips it
+4. The next run time is computed immediately after firing
 
-!!! warning "One worker fires each cron"
-    If you run multiple workers, **each worker** will fire cron tasks independently. For tasks that must run exactly once per interval (e.g. sending one daily report), consider adding an idempotency guard or using a distributed lock.
+Every worker derives the same occurrence timestamps from the same cron
+expression, so they all compete for the same lock key — which is what makes an
+occurrence run **exactly once across the whole fleet**, however many workers are
+up. The lock is held for 60 seconds by default, comfortably longer than the
+one-second scheduler tick.
+
+```python
+# Safe to scale out: this sends one report, not one per worker.
+@app.cron("0 9 * * 1-5", queue="reports")
+async def send_daily_report(ctx): ...
+```
+
+!!! note "Custom brokers"
+    All bundled brokers implement `acquire_cron_lock()`. A custom `BaseBroker`
+    subclass that does not override it falls back to always granting the lock —
+    correct with a single worker, but it logs a warning, because with several
+    workers each one would fire the cron.
+
+Cron tasks execute directly rather than creating `Job` records, so they do not
+appear in the dashboard's job list. Enqueue a regular task from inside the cron
+function if you want that visibility — and the retries and DLQ that come with it:
+
+```python
+@app.cron("0 9 * * 1-5")
+async def schedule_report(ctx):
+    await build_report.enqueue()  # a normal task, fully tracked
+```
 
 ## Error handling
 

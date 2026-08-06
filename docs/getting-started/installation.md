@@ -41,7 +41,7 @@ uv add "aioq[all]"
 | *(none)* | Redis backend, dashboard, worker, CLI |
 | `postgres` | `asyncpg` — enables `PostgresBroker` |
 | `mysql` | `aiomysql` — enables `MySQLBroker` |
-| `prometheus` | `prometheus_client` — enables `/metrics` endpoint |
+| `prometheus` | `prometheus_client` — enables `/metrics` and `--metrics-port` |
 | `cron` | `croniter` — enables `@app.cron(...)` |
 | `all` | all of the above |
 

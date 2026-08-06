@@ -54,14 +54,18 @@ nav:
     - Enqueueing Jobs: guide/enqueueing.md
     - Running Workers: guide/workers.md
     - Cron Scheduling: guide/cron.md
+    - Lifecycle Hooks: guide/hooks.md
     - Dashboard: guide/dashboard.md
+    - Monitoring: guide/monitoring.md
+    - CLI: guide/cli.md
   - Backends:
     - Redis: backends/redis.md
+    - In-Memory: backends/memory.md
     - PostgreSQL: backends/postgres.md
     - MySQL: backends/mysql.md
     - Custom Backend: backends/custom.md
   - API Reference:
-    - Aarq: reference/aarq.md
+    - Aioq: reference/aioq.md
     - Job & JobStatus: reference/models.md
     - TaskDef: reference/taskdef.md
     - BaseBroker: reference/broker.md

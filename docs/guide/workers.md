@@ -8,7 +8,7 @@ Workers dequeue jobs and execute them concurrently. Each worker runs as a single
 aioq worker <app_path>
 ```
 
-`app_path` is a `module:attribute` path to your `Aarq` instance:
+`app_path` is a `module:attribute` path to your `Aioq` instance:
 
 ```bash
 aioq worker myapp.tasks:app
@@ -21,6 +21,7 @@ aioq worker myapp.tasks:app
 | `-q` / `--queue` | `default` | Queue(s) to consume. Repeatable. |
 | `-c` / `--concurrency` | `10` | Max concurrent jobs |
 | `--log-level` | `info` | Logging level (`debug`, `info`, `warning`, `error`) |
+| `--metrics-port` | — | Serve this worker's Prometheus metrics on that port |
 
 ```bash
 # Consume two queues with higher concurrency
@@ -28,7 +29,13 @@ aioq worker myapp.tasks:app -q default -q email --concurrency 20
 
 # Verbose logging for debugging
 aioq worker myapp.tasks:app --log-level debug
+
+# Expose per-worker metrics for Prometheus
+aioq worker myapp.tasks:app --metrics-port 9100
 ```
+
+See [Monitoring](monitoring.md) for what those metrics contain, and
+[CLI](cli.md) for the other commands.
 
 ## Programmatic start
 
@@ -43,10 +50,14 @@ asyncio.run(worker.run())
 
 ## Concurrency model
 
-The worker uses `asyncio.Semaphore(concurrency)` to cap the number of jobs running at the same time. All jobs run as `asyncio.Task` objects in the same event loop — this means CPU-bound work will block other jobs. Use `asyncio.to_thread()` or a `ProcessPoolExecutor` for CPU-intensive tasks.
+The worker uses `asyncio.Semaphore(concurrency)` to cap the number of jobs
+running at the same time. It takes the slot *before* claiming a job, so it never
+holds a claimed job hostage while waiting for capacity, and a retry waiting out
+its backoff holds no slot at all. All jobs run as `asyncio.Task` objects in the same event loop — this means CPU-bound work will block other jobs. Use `asyncio.to_thread()` or a `ProcessPoolExecutor` for CPU-intensive tasks.
 
 ```python
 import asyncio
+
 
 @app.task(queue="cpu")
 async def heavy_compute(ctx, n: int) -> int:

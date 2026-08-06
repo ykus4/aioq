@@ -7,31 +7,33 @@ Inspired by [arq](https://github.com/python-arq/arq), designed for production us
 ## Features
 
 - **Decorator-based API** — `@app.task(...)` and `@app.cron(...)`
-- **Multiple backends** — Redis (built-in), PostgreSQL (`SKIP LOCKED`), MySQL (`SKIP LOCKED`), extensible via `BaseBroker`
-- **Built-in dashboard** — real-time queue stats, job browser, retry/cancel from UI
-- **Prometheus metrics** — `/metrics` endpoint for Grafana/Alertmanager integration
+- **Multiple backends** — Redis, PostgreSQL and MySQL (`SKIP LOCKED`), in-memory for tests, extensible via `BaseBroker`
+- **Built-in dashboard** — real-time queue stats, job browser, retry/cancel/replay from UI
+- **Prometheus metrics** — queue gauges from the dashboard, execution counters and duration histograms from each worker
+- **Job timeouts** — `timeout=30` cancels a hung job instead of letting it hold a slot forever
+- **Retries with backoff** — flat or exponential-with-jitter; a waiting retry never occupies worker capacity
+- **Dead letter queue** — configurable DLQ per task, with replay
 - **Priority queues** — per-job priority (0/5/10) processed highest-first
-- **Batch enqueue** — `task.enqueue_many(items)` for efficient bulk submission
-- **Dead letter queue** — configurable DLQ per task; failed jobs move to `dead` status
 - **Job dependencies** — `depends_on=[job_id, ...]` to chain jobs
 - **Deferred jobs** — `defer_by=60` or `defer_until=datetime(...)`
-- **Retry with delay** — configurable `retries` and `retry_delay`
-- **Cron scheduling** — standard cron expressions via `croniter`
-- **Job cancellation & retry** — from code or dashboard
+- **Batch enqueue** — `task.enqueue_many(items)` for efficient bulk submission
+- **Cron scheduling** — standard cron expressions, fired exactly once across the whole worker fleet
+- **Lifecycle hooks** — `@app.on_job_success` / `on_job_failure` / … for logging, tracing, error reporting
+- **CLI** — `aioq status`, `jobs`, `show`, `retry`, `cancel`, `purge`
 - **Result storage** — optional per-task with configurable TTL
 - **Graceful shutdown** — drains in-flight jobs on SIGTERM/SIGINT
 
 ## Quick Example
 
 ```python
-from aioq import Aarq
+from aioq import Aioq
 from aioq.backends import RedisBroker
 
 broker = RedisBroker(url="redis://localhost:6379")
-app = Aarq(broker=broker)
+app = Aioq(broker=broker)
 
 
-@app.task(queue="default", retries=3, retry_delay=10.0)
+@app.task(queue="default", retries=3, retry_delay=10.0, retry_backoff=True, timeout=30)
 async def send_email(ctx, to: str, subject: str) -> dict:
     print(f"Sending email to {to}")
     return {"status": "sent"}
@@ -61,6 +63,9 @@ aioq worker tasks:app
 
 # Open the dashboard
 aioq dashboard tasks:app --port 8080
+
+# Or check in from the terminal
+aioq status tasks:app
 ```
 
 ## Installation
@@ -81,4 +86,4 @@ pip install "aioq[all]"              # everything
 - **[Getting Started](getting-started/installation.md)** — install and run your first job in 5 minutes
 - **[User Guide](guide/tasks.md)** — in-depth coverage of tasks, workers, cron, and the dashboard
 - **[Backends](backends/redis.md)** — backend-specific configuration and internals
-- **[API Reference](reference/aarq.md)** — full API documentation
+- **[API Reference](reference/aioq.md)** — full API documentation
