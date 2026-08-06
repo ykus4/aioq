@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -664,10 +664,49 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#retry-behaviour" class="md-nav__link">
     <span class="md-ellipsis">
       
         Retry behaviour
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Retry behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exponential-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead letter queues
       
     </span>
   </a>
@@ -796,6 +835,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../dashboard/" class="md-nav__link">
         
   
@@ -804,6 +871,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -891,6 +1014,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -1054,14 +1205,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1254,10 +1405,49 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#retry-behaviour" class="md-nav__link">
     <span class="md-ellipsis">
       
         Retry behaviour
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Retry behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exponential-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dead-letter-queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead letter queues
       
     </span>
   </a>
@@ -1309,10 +1499,10 @@
 <h1 id="defining-tasks">Defining Tasks<a class="headerlink" href="#defining-tasks" title="Permanent link">&para;</a></h1>
 <p>Tasks are async functions decorated with <code>@app.task(...)</code>. The decorator registers the function in the app and returns a <code>TaskDef</code> object that exposes an <code>.enqueue()</code> method.</p>
 <h2 id="basic-task">Basic task<a class="headerlink" href="#basic-task" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aarq</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBroker</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aarq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">RedisBroker</span><span class="p">())</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">RedisBroker</span><span class="p">())</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
@@ -1322,14 +1512,19 @@
 </code></pre></div>
 <h2 id="task-options">Task options<a class="headerlink" href="#task-options" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>      <span class="c1"># (str) queue to publish to</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">retries</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>            <span class="c1"># (int) max retry attempts on failure</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">retry_delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>      <span class="c1"># (float) seconds to wait before each retry</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">save_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>    <span class="c1"># (bool) persist return value in the broker</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">result_ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>      <span class="c1"># (int) seconds to keep the result (Redis only)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="o">...</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>           <span class="c1"># (str) queue to publish to</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">retries</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>                 <span class="c1"># (int) max retry attempts on failure</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">retry_delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>           <span class="c1"># (float) seconds to wait before each retry</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">retry_backoff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>       <span class="c1"># (bool) grow the delay exponentially</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">retry_backoff_max</span><span class="o">=</span><span class="mf">600.0</span><span class="p">,</span>   <span class="c1"># (float) cap for the exponential delay</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>              <span class="c1"># (float) cancel and fail the job after N seconds</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">save_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>         <span class="c1"># (bool) persist return value in the broker</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">result_ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>           <span class="c1"># (int) seconds to keep the result</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>                <span class="c1"># (int) higher runs first</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">dead_letter_queue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>    <span class="c1"># (str) where to park permanently failed jobs</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="o">...</span>
 </code></pre></div>
 <table>
 <thead>
@@ -1360,6 +1555,24 @@
 <td>Seconds between retries</td>
 </tr>
 <tr>
+<td><code>retry_backoff</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Exponential backoff with jitter</td>
+</tr>
+<tr>
+<td><code>retry_backoff_max</code></td>
+<td><code>float</code></td>
+<td><code>600.0</code></td>
+<td>Upper bound on the backoff delay</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>float \| None</code></td>
+<td><code>None</code></td>
+<td>Per-job execution timeout in seconds</td>
+</tr>
+<tr>
 <td><code>save_result</code></td>
 <td><code>bool</code></td>
 <td><code>False</code></td>
@@ -1369,16 +1582,32 @@
 <td><code>result_ttl</code></td>
 <td><code>int</code></td>
 <td><code>3600</code></td>
-<td>Result TTL in seconds (Redis)</td>
+<td>Result TTL in seconds</td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Dequeue priority</td>
+</tr>
+<tr>
+<td><code>dead_letter_queue</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>DLQ for exhausted retries</td>
 </tr>
 </tbody>
 </table>
+<p>Task names must be unique within an app — registering two tasks with the same
+module and qualified name raises <code>ValueError</code>, because workers resolve jobs by
+name.</p>
 <h2 id="the-ctx-argument">The <code>ctx</code> argument<a class="headerlink" href="#the-ctx-argument" title="Permanent link">&para;</a></h2>
 <p>Every task receives a context dict as its first argument:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">worker_id</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;worker_id&quot;</span><span class="p">]</span>  <span class="c1"># str — UUID of the executing worker</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">job_id</span>    <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>     <span class="c1"># str — UUID of the current job</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">broker</span>    <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>     <span class="c1"># BaseBroker — broker instance</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">job_id</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>  <span class="c1"># str — UUID of the current job</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;job&quot;</span><span class="p">]</span>  <span class="c1"># Job  — the full job record</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>  <span class="c1"># BaseBroker — broker instance</span>
 </code></pre></div>
 <p>You can use <code>ctx["broker"]</code> to enqueue follow-up jobs from within a task:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
@@ -1386,45 +1615,89 @@
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="k">await</span> <span class="n">child_task</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="retry-behaviour">Retry behaviour<a class="headerlink" href="#retry-behaviour" title="Permanent link">&para;</a></h2>
-<p>When a task raises an exception and <code>retries &gt; 0</code>, the worker:</p>
-<ol>
-<li>Increments <code>job.retries</code></li>
-<li>Sets <code>job.status = "retrying"</code></li>
-<li>Waits <code>retry_delay</code> seconds</li>
-<li>Re-enqueues the job as <code>pending</code></li>
-</ol>
-<p>Once <code>job.retries == job.max_retries</code> and the task fails again, the job is marked <code>failed</code> permanently.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">flaky_api_call</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<h2 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h2>
+<p>Without a <code>timeout</code>, a task that hangs — a socket that never returns, an
+infinite loop — occupies one of the worker's concurrency slots forever. Set one
+and the worker cancels the coroutine and treats it as a failure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_flaky_api</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">))</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="result-storage">Result storage<a class="headerlink" href="#result-storage" title="Permanent link">&para;</a></h2>
-<p>Enable <code>save_result=True</code> to persist the return value. Retrieve it via the broker:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">save_result</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">result_ttl</span><span class="o">=</span><span class="mi">7200</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># After the job completes:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># 25 (if n=5)</span>
+<p>A timed-out job raises <code>aioq.JobTimeoutError</code> internally, so it retries and
+lands in the DLQ exactly like any other error. <code>JobTimeoutError</code> subclasses
+<code>TimeoutError</code>, so you can catch it inside your task if you want to handle the
+deadline yourself:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobTimeoutError</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code>result_ttl</code> is only honoured by <code>RedisBroker</code>. <code>PostgresBroker</code> stores results indefinitely until the row is deleted.</p>
+<p>Cancellation is cooperative. A task blocked in synchronous CPU-bound code
+cannot be interrupted — run that in a thread or process pool.</p>
 </div>
+<h2 id="retry-behaviour">Retry behaviour<a class="headerlink" href="#retry-behaviour" title="Permanent link">&para;</a></h2>
+<p>When a task raises and <code>retries &gt; 0</code>, the worker:</p>
+<ol>
+<li>Increments <code>job.retries</code></li>
+<li>Sets <code>job.status = "retrying"</code></li>
+<li>Schedules the job to run again after the retry delay</li>
+<li>Releases its concurrency slot immediately</li>
+</ol>
+<p>The job is <em>rescheduled</em>, not slept on, so a long backoff does not tie up worker
+capacity. Once <code>job.retries == job.max_retries</code> and the task fails again, the
+job is marked <code>failed</code> — or moved to its <code>dead_letter_queue</code> if it has one.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">flaky_api_call</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="exponential-backoff">Exponential backoff<a class="headerlink" href="#exponential-backoff" title="Permanent link">&para;</a></h3>
+<p>A flat <code>retry_delay</code> retries every failure at the same cadence, which hammers a
+struggling dependency and makes every job that failed together retry together.
+<code>retry_backoff=True</code> doubles the delay per attempt and applies full jitter:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">retry_backoff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">retry_backoff_max</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_rate_limited_api</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span> <span class="o">...</span>
+</code></pre></div>
+<p>With <code>retry_delay=2.0</code>, the delay is drawn uniformly from <code>[0, 2]</code>, <code>[0, 4]</code>,
+<code>[0, 8]</code>, <code>[0, 16]</code>, <code>[0, 32]</code> — capped at <code>retry_backoff_max</code>.</p>
+<h2 id="dead-letter-queues">Dead letter queues<a class="headerlink" href="#dead-letter-queues" title="Permanent link">&para;</a></h2>
+<p>Give a task a <code>dead_letter_queue</code> and jobs that exhaust their retries are moved
+there with status <code>dead</code> rather than simply marked <code>failed</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dead_letter_queue</span><span class="o">=</span><span class="s2">&quot;emails-dlq&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span> <span class="o">...</span>
+</code></pre></div>
+<p>Inspect and replay them:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">dead</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">list_dead_jobs</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;emails-dlq&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">replay_dead_job</span><span class="p">(</span><span class="n">dead</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>  <span class="c1"># back to pending, retries reset</span>
+</code></pre></div>
+<p>The dashboard exposes the same thing via a <strong>Replay</strong> button, and the CLI via
+<code>aioq retry &lt;app&gt; &lt;job-id&gt;</code>.</p>
+<h2 id="result-storage">Result storage<a class="headerlink" href="#result-storage" title="Permanent link">&para;</a></h2>
+<p>Enable <code>save_result=True</code> to persist the return value. Retrieve it via the broker:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">save_result</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">result_ttl</span><span class="o">=</span><span class="mi">7200</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="c1"># After the job completes:</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># 25 (if n=5)</span>
+</code></pre></div>
+<p><code>result_ttl</code> sets how long a saved result is kept. <code>RedisBroker</code> expires the
+record automatically and cleans up its index entries; the SQL backends keep rows
+until you run <code>broker.purge(...)</code> or <code>aioq purge</code>.</p>
+<p>Set <code>result_ttl=0</code> to keep results forever.</p>
 <h2 id="task-name">Task name<a class="headerlink" href="#task-name" title="Permanent link">&para;</a></h2>
 <p>The task name is derived automatically as <code>{module}.{qualname}</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># In module &quot;myapp.tasks&quot;</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">()</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span> <span class="o">...</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># task name: &quot;myapp.tasks.send_email&quot;</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">send_email</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># In module &quot;myapp.tasks&quot;</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">()</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span> <span class="o">...</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="c1"># task name: &quot;myapp.tasks.send_email&quot;</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">send_email</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </code></pre></div>
 <p>The worker uses this name to look up the function at execution time, so <code>tasks.py</code> must be importable from the worker process.</p>
 

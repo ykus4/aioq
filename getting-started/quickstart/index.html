@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -588,10 +588,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-open-the-dashboard" class="md-nav__link">
+  <a href="#5-check-in-from-the-terminal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Open the dashboard
+        5. Check in from the terminal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Open the dashboard
       
     </span>
   </a>
@@ -796,6 +807,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -804,6 +843,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -891,6 +986,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -1054,14 +1177,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1265,10 +1388,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-open-the-dashboard" class="md-nav__link">
+  <a href="#5-check-in-from-the-terminal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Open the dashboard
+        5. Check in from the terminal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Open the dashboard
       
     </span>
   </a>
@@ -1311,16 +1445,23 @@
 <h2 id="1-start-redis">1. Start Redis<a class="headerlink" href="#1-start-redis" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">6379</span>:6379<span class="w"> </span>redis:7
 </code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">No Redis handy?</p>
+<p>Swap <code>RedisBroker</code> for <code>MemoryBroker</code> below and skip this step. Everything
+works the same, but the queue lives inside one process — so run the worker
+<a href="../../backends/memory/#running-everything-in-one-process">embedded</a> rather
+than via <code>aioq worker</code>.</p>
+</div>
 <h2 id="2-define-tasks">2. Define tasks<a class="headerlink" href="#2-define-tasks" title="Permanent link">&para;</a></h2>
 <p>Create <code>tasks.py</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aarq</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBroker</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">broker</span> <span class="o">=</span> <span class="n">RedisBroker</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aarq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">broker</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">broker</span><span class="p">)</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add] </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
@@ -1355,14 +1496,19 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>enqueue.py
 </code></pre></div>
 <h2 id="4-run-a-worker">4. Run a worker<a class="headerlink" href="#4-run-a-worker" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>tasks:app
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>tasks:app<span class="w"> </span>-q<span class="w"> </span>default<span class="w"> </span>-q<span class="w"> </span>email
 </code></pre></div>
-<p>The worker will process both queues and print results as jobs complete.</p>
-<p>To consume specific queues:</p>
+<p>The worker prints results as jobs complete. Name every queue you want consumed —
+without <code>-q</code> it only picks up <code>default</code>, so the <code>send_email</code> job would sit there
+untouched.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>tasks:app<span class="w"> </span>-q<span class="w"> </span>default<span class="w"> </span>-q<span class="w"> </span>email<span class="w"> </span>--concurrency<span class="w"> </span><span class="m">20</span>
 </code></pre></div>
-<h2 id="5-open-the-dashboard">5. Open the dashboard<a class="headerlink" href="#5-open-the-dashboard" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>aioq<span class="w"> </span>dashboard<span class="w"> </span>tasks:app<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
+<h2 id="5-check-in-from-the-terminal">5. Check in from the terminal<a class="headerlink" href="#5-check-in-from-the-terminal" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>aioq<span class="w"> </span>status<span class="w"> </span>tasks:app<span class="w">        </span><span class="c1"># queue depth per status, worker health</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>aioq<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>tasks:app<span class="w">          </span><span class="c1"># the 20 most recent jobs</span>
+</code></pre></div>
+<h2 id="6-open-the-dashboard">6. Open the dashboard<a class="headerlink" href="#6-open-the-dashboard" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>aioq<span class="w"> </span>dashboard<span class="w"> </span>tasks:app<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
 </code></pre></div>
 <p>Navigate to <a href="http://localhost:8080">http://localhost:8080</a> to see:</p>
 <ul>
@@ -1372,10 +1518,14 @@
 </ul>
 <h2 id="whats-next">What's next?<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../guide/tasks/">Defining Tasks</a> — all <code>@app.task</code> options</li>
+<li><a href="../../guide/tasks/">Defining Tasks</a> — timeouts, retries, backoff, DLQs</li>
 <li><a href="../../guide/cron/">Cron Scheduling</a> — recurring tasks</li>
+<li><a href="../../guide/hooks/">Lifecycle Hooks</a> — logging and error reporting</li>
+<li><a href="../../guide/monitoring/">Monitoring</a> — Prometheus metrics</li>
+<li><a href="../../guide/cli/">CLI</a> — inspecting and fixing jobs from the terminal</li>
 <li><a href="../../guide/dashboard/">Dashboard</a> — mounting into an existing app</li>
 <li><a href="../../backends/postgres/">PostgreSQL backend</a> — swap out Redis</li>
+<li><a href="../../backends/memory/">In-memory backend</a> — for tests</li>
 </ul>
 
 

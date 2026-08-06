@@ -306,7 +306,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../aarq/" class="md-tabs__link">
+        <a href="../aioq/" class="md-tabs__link">
           
   
   
@@ -676,6 +676,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -684,6 +712,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -771,6 +855,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -939,14 +1051,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../aarq/" class="md-nav__link">
+      <a href="../aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1133,6 +1245,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#workerstop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        worker.stop()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workeris_running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        worker.is_running
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#workerworker_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1179,6 +1313,28 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1247,6 +1403,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#workerstop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        worker.stop()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workeris_running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        worker.is_running
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#workerworker_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1296,6 +1474,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1326,7 +1526,8 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">queues</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">],</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">concurrency</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">heartbeat_interval</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
 </code></pre></div>
 <table>
 <thead>
@@ -1340,7 +1541,7 @@
 <tbody>
 <tr>
 <td><code>app</code></td>
-<td><code>Aarq</code></td>
+<td><code>Aioq</code></td>
 <td>—</td>
 <td>Application instance</td>
 </tr>
@@ -1362,6 +1563,12 @@
 <td><code>10.0</code></td>
 <td>Seconds between heartbeats</td>
 </tr>
+<tr>
+<td><code>metrics</code></td>
+<td><code>WorkerMetrics \| None</code></td>
+<td><code>None</code></td>
+<td>Records per-job counters — see <a href="../../guide/monitoring/">Monitoring</a></td>
+</tr>
 </tbody>
 </table>
 <h2 id="await-workerrun"><code>await worker.run()</code><a class="headerlink" href="#await-workerrun" title="Permanent link">&para;</a></h2>
@@ -1379,6 +1586,10 @@
 <li>Start cron loop (if any cron tasks are registered)</li>
 <li>Enter the main dequeue loop</li>
 </ol>
+<p>The worker takes a concurrency slot <em>before</em> claiming a job, so it never holds a
+claimed job while waiting for capacity. If <code>dequeue()</code> raises — a broker outage —
+the error is logged, the slot released, and the loop retries after a short
+backoff rather than crashing the process.</p>
 <p><strong>Shutdown sequence (on SIGTERM/SIGINT):</strong></p>
 <ol>
 <li>Stop the dequeue loop</li>
@@ -1387,15 +1598,40 @@
 <li><code>broker.deregister_worker(worker_id)</code></li>
 <li><code>broker.disconnect()</code></li>
 </ol>
+<h2 id="workerstop"><code>worker.stop()</code><a class="headerlink" href="#workerstop" title="Permanent link">&para;</a></h2>
+<p>Ask the worker to finish its in-flight jobs and shut down — the programmatic
+equivalent of SIGTERM. Safe to call before <code>run()</code>, and safe to call twice.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="o">...</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">worker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">await</span> <span class="n">runner</span>  <span class="c1"># returns once in-flight jobs have drained</span>
+</code></pre></div>
+<p>Signal handlers are installed on a best-effort basis: where
+<code>loop.add_signal_handler</code> is unavailable (Windows, or a non-main thread) the
+worker logs a debug message and relies on you calling <code>stop()</code>.</p>
+<h2 id="workeris_running"><code>worker.is_running</code><a class="headerlink" href="#workeris_running" title="Permanent link">&para;</a></h2>
+<p><code>False</code> once a stop has been requested.</p>
 <h2 id="workerworker_id"><code>worker.worker_id</code><a class="headerlink" href="#workerworker_id" title="Permanent link">&para;</a></h2>
 <p>A UUID string assigned on construction. Unique per process.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">worker_id</span><span class="p">)</span>  <span class="c1"># &quot;3d6f4455-...&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">worker_id</span><span class="p">)</span>  <span class="c1"># &quot;3d6f4455-...&quot;</span>
 </code></pre></div>
 <h2 id="internal-loops">Internal loops<a class="headerlink" href="#internal-loops" title="Permanent link">&para;</a></h2>
 <h3 id="heartbeat-loop">Heartbeat loop<a class="headerlink" href="#heartbeat-loop" title="Permanent link">&para;</a></h3>
 <p>Runs every <code>heartbeat_interval</code> seconds, calling <code>broker.heartbeat_worker()</code>. Failures are silently suppressed so a temporary broker outage doesn't crash the worker.</p>
 <h3 id="cron-loop">Cron loop<a class="headerlink" href="#cron-loop" title="Permanent link">&para;</a></h3>
-<p>Runs every second, checking whether any cron task is due. When a task fires, it runs as an <code>asyncio.Task</code> and its next run time is scheduled immediately.</p>
+<p>Runs every second, checking whether any cron task is due. Before firing, the
+worker must win <code>broker.acquire_cron_lock()</code> for that occurrence, so an
+occurrence executes exactly once no matter how many workers are running. A cron
+task that raises is logged; the next occurrence still fires.</p>
+<h2 id="retries">Retries<a class="headerlink" href="#retries" title="Permanent link">&para;</a></h2>
+<p>A failed attempt with retries left is <em>rescheduled</em>, not slept on: the worker
+sets <code>run_at</code> to the next attempt time, re-enqueues the job and frees its
+concurrency slot immediately. A long backoff therefore costs no worker capacity.
+See <a href="../../guide/tasks/#retry-behaviour">Defining Tasks</a>.</p>
+<h2 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h2>
+<p>A job with a <code>timeout</code> is run under <code>asyncio.wait_for</code>. On expiry the coroutine
+is cancelled and the job fails with <code>JobTimeoutError</code>, which then follows the
+normal retry and DLQ path.</p>
 
 
 

@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../aarq/" class="md-tabs__link">
+        <a href="../aioq/" class="md-tabs__link">
           
   
   
@@ -678,6 +678,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -686,6 +714,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -773,6 +857,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -941,14 +1053,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../aarq/" class="md-nav__link">
+      <a href="../aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1092,6 +1204,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#await-taskenqueue_manyitems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await task.enqueue_many(items, ...)
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1244,6 +1367,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#await-taskenqueue_manyitems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await task.enqueue_many(items, ...)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#await-taskctx" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1307,6 +1441,21 @@
 <td>Seconds between retries</td>
 </tr>
 <tr>
+<td><code>retry_backoff</code></td>
+<td><code>bool</code></td>
+<td>Grow the retry delay exponentially</td>
+</tr>
+<tr>
+<td><code>retry_backoff_max</code></td>
+<td><code>float</code></td>
+<td>Cap on the exponential delay</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>float \| None</code></td>
+<td>Execution timeout in seconds</td>
+</tr>
+<tr>
 <td><code>save_result</code></td>
 <td><code>bool</code></td>
 <td>Whether to persist result</td>
@@ -1317,13 +1466,23 @@
 <td>Result TTL in seconds</td>
 </tr>
 <tr>
+<td><code>priority</code></td>
+<td><code>int</code></td>
+<td>Default dequeue priority</td>
+</tr>
+<tr>
+<td><code>dead_letter_queue</code></td>
+<td><code>str \| None</code></td>
+<td>DLQ for exhausted retries</td>
+</tr>
+<tr>
 <td><code>fn</code></td>
 <td><code>Callable</code></td>
 <td>The underlying async function</td>
 </tr>
 <tr>
 <td><code>app</code></td>
-<td><code>Aarq</code></td>
+<td><code>Aioq</code></td>
 <td>Parent application</td>
 </tr>
 </tbody>
@@ -1353,8 +1512,19 @@
 <td><code>datetime \| None</code></td>
 <td>Absolute time to run the job</td>
 </tr>
+<tr>
+<td><code>priority</code></td>
+<td><code>int \| None</code></td>
+<td>Override the task's default priority</td>
+</tr>
+<tr>
+<td><code>depends_on</code></td>
+<td><code>list[str] \| None</code></td>
+<td>Job IDs that must complete first</td>
+</tr>
 </tbody>
 </table>
+<p>Passing both <code>defer_by</code> and <code>defer_until</code> raises <code>ValueError</code>.</p>
 <p>All other positional and keyword arguments are forwarded to the task function.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Run now</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">send_email</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="s2">&quot;a@b.com&quot;</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="s2">&quot;Hi&quot;</span><span class="p">)</span>
@@ -1364,14 +1534,29 @@
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Run at a specific time</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">send_email</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">to</span><span class="o">=</span><span class="s2">&quot;a@b.com&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">defer_until</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">send_email</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">to</span><span class="o">=</span><span class="s2">&quot;a@b.com&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">defer_until</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">)</span>
 </code></pre></div>
+<h2 id="await-taskenqueue_manyitems"><code>await task.enqueue_many(items, ...)</code><a class="headerlink" href="#await-taskenqueue_manyitems" title="Permanent link">&para;</a></h2>
+<p>Enqueue many calls in one broker round-trip. Each item is either a kwargs dict or
+a positional-args tuple; the two can be mixed. Returns the list of <code>Job</code> objects.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">send_email</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">[</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="p">{</span><span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;a@b.com&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="p">{</span><span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;c@d.com&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="p">]</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">jobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">add</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)])</span>
+</code></pre></div>
+<p>The keyword options <code>defer_by</code>, <code>defer_until</code>, <code>priority</code> and <code>depends_on</code> apply
+to every job in the batch.</p>
 <h2 id="await-taskctx"><code>await task(ctx, ...)</code><a class="headerlink" href="#await-taskctx" title="Permanent link">&para;</a></h2>
 <p>Directly call the underlying function. Used internally by the worker.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">my_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">my_task</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">)</span>
 </code></pre></div>
 
 

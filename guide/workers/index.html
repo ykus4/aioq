@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -824,6 +824,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../dashboard/" class="md-nav__link">
         
   
@@ -832,6 +860,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -919,6 +1003,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -1082,14 +1194,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1367,7 +1479,7 @@
 <h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>&lt;app_path&gt;
 </code></pre></div>
-<p><code>app_path</code> is a <code>module:attribute</code> path to your <code>Aarq</code> instance:</p>
+<p><code>app_path</code> is a <code>module:attribute</code> path to your <code>Aioq</code> instance:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>myapp.tasks:app
 </code></pre></div>
 <h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
@@ -1395,6 +1507,11 @@
 <td><code>info</code></td>
 <td>Logging level (<code>debug</code>, <code>info</code>, <code>warning</code>, <code>error</code>)</td>
 </tr>
+<tr>
+<td><code>--metrics-port</code></td>
+<td>—</td>
+<td>Serve this worker's Prometheus metrics on that port</td>
+</tr>
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Consume two queues with higher concurrency</span>
@@ -1402,7 +1519,12 @@
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Verbose logging for debugging</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>aioq<span class="w"> </span>worker<span class="w"> </span>myapp.tasks:app<span class="w"> </span>--log-level<span class="w"> </span>debug
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Expose per-worker metrics for Prometheus</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>aioq<span class="w"> </span>worker<span class="w"> </span>myapp.tasks:app<span class="w"> </span>--metrics-port<span class="w"> </span><span class="m">9100</span>
 </code></pre></div>
+<p>See <a href="../monitoring/">Monitoring</a> for what those metrics contain, and
+<a href="../cli/">CLI</a> for the other commands.</p>
 <h2 id="programmatic-start">Programmatic start<a class="headerlink" href="#programmatic-start" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
@@ -1412,13 +1534,17 @@
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="concurrency-model">Concurrency model<a class="headerlink" href="#concurrency-model" title="Permanent link">&para;</a></h2>
-<p>The worker uses <code>asyncio.Semaphore(concurrency)</code> to cap the number of jobs running at the same time. All jobs run as <code>asyncio.Task</code> objects in the same event loop — this means CPU-bound work will block other jobs. Use <code>asyncio.to_thread()</code> or a <code>ProcessPoolExecutor</code> for CPU-intensive tasks.</p>
+<p>The worker uses <code>asyncio.Semaphore(concurrency)</code> to cap the number of jobs
+running at the same time. It takes the slot <em>before</em> claiming a job, so it never
+holds a claimed job hostage while waiting for capacity, and a retry waiting out
+its backoff holds no slot at all. All jobs run as <code>asyncio.Task</code> objects in the same event loop — this means CPU-bound work will block other jobs. Use <code>asyncio.to_thread()</code> or a <code>ProcessPoolExecutor</code> for CPU-intensive tasks.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">heavy_compute</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="c1"># Offload to a thread to avoid blocking the event loop</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">expensive_function</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">heavy_compute</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="c1"># Offload to a thread to avoid blocking the event loop</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">expensive_function</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="heartbeat">Heartbeat<a class="headerlink" href="#heartbeat" title="Permanent link">&para;</a></h2>
 <p>Workers send a heartbeat to the broker every 10 seconds. The dashboard uses this to show a liveness indicator. A worker is considered dead if its last heartbeat is older than 30 seconds.</p>

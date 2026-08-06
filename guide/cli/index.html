@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://ykus4.github.io/aioq/guide/cron/">
+        <link rel="canonical" href="https://ykus4.github.io/aioq/guide/cli/">
       
       
-        <link rel="prev" href="../workers/">
+        <link rel="prev" href="../monitoring/">
       
       
-        <link rel="next" href="../hooks/">
+        <link rel="next" href="../../backends/redis/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Cron Scheduling - aioq</title>
+        <title>CLI - aioq</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cron-scheduling" class="md-skip">
+        <a href="#cli" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cron Scheduling
+              CLI
             
           </span>
         </div>
@@ -652,37 +652,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cron Scheduling
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../cron/" class="md-nav__link">
         
   
   
@@ -698,92 +671,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#defining-cron-tasks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Defining cron tasks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cron-expression-syntax" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cron expression syntax
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ctx-in-cron-tasks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ctx in cron tasks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error handling
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -877,10 +764,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -896,6 +810,165 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running processes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running processes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inspection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq show
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mutations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mutations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-cancel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq cancel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-purge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq purge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1333,68 +1406,141 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#running-processes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        Running processes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running processes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq worker
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#defining-cron-tasks" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-dashboard" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Defining cron tasks
+        aioq dashboard
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#cron-expression-syntax" class="md-nav__link">
+  <a href="#inspection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cron expression syntax
+        Inspection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inspection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq status
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#ctx-in-cron-tasks" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ctx in cron tasks
+        aioq jobs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-show" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How it works
+        aioq show
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#mutations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error handling
+        Mutations
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Mutations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aioq-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-cancel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq cancel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aioq-purge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq purge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1418,125 +1564,101 @@
   
 
 
-<h1 id="cron-scheduling">Cron Scheduling<a class="headerlink" href="#cron-scheduling" title="Permanent link">&para;</a></h1>
-<p>aioq supports recurring tasks via standard cron expressions. Cron tasks are fired automatically by the worker — no separate scheduler process is needed.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>Cron requires the <code>croniter</code> package:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span>
+<h1 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h1>
+<p>Every command takes an <code>APP_PATH</code> — a <code>module:attribute</code> path to your <code>Aioq</code>
+instance, e.g. <code>myapp.tasks:app</code>. The module must be importable from the current
+directory.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>aioq<span class="w"> </span>--help
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>aioq<span class="w"> </span>--version
 </code></pre></div>
-<h2 id="defining-cron-tasks">Defining cron tasks<a class="headerlink" href="#defining-cron-tasks" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBroker</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">RedisBroker</span><span class="p">())</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;*/5 * * * *&quot;</span><span class="p">)</span>             <span class="c1"># every 5 minutes</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cleanup_old_jobs</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="c1"># ... cleanup logic</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;reports&quot;</span><span class="p">)</span>  <span class="c1"># weekdays at 9 AM</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_daily_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="c1"># ... report logic</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 0 1 * *&quot;</span><span class="p">)</span>               <span class="c1"># first day of every month</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">monthly_summary</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="c1"># ... summary logic</span>
+<h2 id="running-processes">Running processes<a class="headerlink" href="#running-processes" title="Permanent link">&para;</a></h2>
+<h3 id="aioq-worker"><code>aioq worker</code><a class="headerlink" href="#aioq-worker" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>aioq<span class="w"> </span>worker<span class="w"> </span>myapp.tasks:app<span class="w"> </span>-q<span class="w"> </span>default<span class="w"> </span>-q<span class="w"> </span>emails<span class="w"> </span>-c<span class="w"> </span><span class="m">20</span>
 </code></pre></div>
-<h2 id="cron-expression-syntax">Cron expression syntax<a class="headerlink" href="#cron-expression-syntax" title="Permanent link">&para;</a></h2>
-<p>Cron expressions follow the standard 5-field format:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌─────── minute      (0–59)
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│ ┌───── hour        (0–23)
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│ │ ┌─── day of month (1–31)
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│ │ │ ┌─ month       (1–12)
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│ │ │ │ ┌ day of week (0–7, 0 and 7 = Sunday)
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│ │ │ │ │
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>* * * * *
-</code></pre></div>
-<p>Common examples:</p>
 <table>
 <thead>
 <tr>
-<th>Expression</th>
-<th>Meaning</th>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>* * * * *</code></td>
-<td>Every minute</td>
+<td><code>-q, --queue</code></td>
+<td><code>default</code></td>
+<td>Queue to consume. Repeat for several.</td>
 </tr>
 <tr>
-<td><code>*/5 * * * *</code></td>
-<td>Every 5 minutes</td>
+<td><code>-c, --concurrency</code></td>
+<td><code>10</code></td>
+<td>Max jobs in flight at once.</td>
 </tr>
 <tr>
-<td><code>0 * * * *</code></td>
-<td>Every hour</td>
+<td><code>--log-level</code></td>
+<td><code>info</code></td>
+<td>Root log level.</td>
 </tr>
 <tr>
-<td><code>0 9 * * *</code></td>
-<td>Every day at 9 AM</td>
-</tr>
-<tr>
-<td><code>0 9 * * 1-5</code></td>
-<td>Weekdays at 9 AM</td>
-</tr>
-<tr>
-<td><code>0 0 * * 0</code></td>
-<td>Every Sunday at midnight</td>
-</tr>
-<tr>
-<td><code>0 0 1 * *</code></td>
-<td>First day of every month</td>
+<td><code>--metrics-port</code></td>
+<td>—</td>
+<td>Serve this worker's Prometheus metrics on that port.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="ctx-in-cron-tasks"><code>ctx</code> in cron tasks<a class="headerlink" href="#ctx-in-cron-tasks" title="Permanent link">&para;</a></h2>
-<p>Cron tasks receive a context dict with <code>worker_id</code> and <code>broker</code>, but <strong>not</strong> <code>job_id</code> (cron tasks don't create <code>Job</code> records):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_cron</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">worker_id</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;worker_id&quot;</span><span class="p">]</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>
+<h3 id="aioq-dashboard"><code>aioq dashboard</code><a class="headerlink" href="#aioq-dashboard" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>aioq<span class="w"> </span>dashboard<span class="w"> </span>myapp.tasks:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
 </code></pre></div>
-<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>The worker runs a background loop that checks the schedule every second. When a cron task is due:</p>
-<ol>
-<li>The worker tries to claim that occurrence with a broker-held lock</li>
-<li>If it wins, the task is called in the worker's event loop as an <code>asyncio.Task</code></li>
-<li>If it loses, another worker is already running it, and this worker skips it</li>
-<li>The next run time is computed immediately after firing</li>
-</ol>
-<p>Every worker derives the same occurrence timestamps from the same cron
-expression, so they all compete for the same lock key — which is what makes an
-occurrence run <strong>exactly once across the whole fleet</strong>, however many workers are
-up. The lock is held for 60 seconds by default, comfortably longer than the
-one-second scheduler tick.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Safe to scale out: this sends one report, not one per worker.</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;reports&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_daily_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span> <span class="o">...</span>
+<h2 id="inspection">Inspection<a class="headerlink" href="#inspection" title="Permanent link">&para;</a></h2>
+<h3 id="aioq-status"><code>aioq status</code><a class="headerlink" href="#aioq-status" title="Permanent link">&para;</a></h3>
+<p>Queue depth per status, plus worker health.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">$ </span>aioq<span class="w"> </span>status<span class="w"> </span>myapp.tasks:app
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="go">QUEUE     completed  failed  pending  running</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="go">default   1043       2       17       4</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="go">emails    88         0       0        1</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="go">Workers: 2 alive / 2 registered</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="go">  ● 7f3c1a9e-...  queues=default,emails</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="go">  ● b2d90f41-...  queues=default</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Custom brokers</p>
-<p>All bundled brokers implement <code>acquire_cron_lock()</code>. A custom <code>BaseBroker</code>
-subclass that does not override it falls back to always granting the lock —
-correct with a single worker, but it logs a warning, because with several
-workers each one would fire the cron.</p>
-</div>
-<p>Cron tasks execute directly rather than creating <code>Job</code> records, so they do not
-appear in the dashboard's job list. Enqueue a regular task from inside the cron
-function if you want that visibility — and the retries and DLQ that come with it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">schedule_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">await</span> <span class="n">build_report</span><span class="o">.</span><span class="n">enqueue</span><span class="p">()</span>  <span class="c1"># a normal task, fully tracked</span>
+<h3 id="aioq-jobs"><code>aioq jobs</code><a class="headerlink" href="#aioq-jobs" title="Permanent link">&para;</a></h3>
+<p>Most recently enqueued first.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>aioq<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>myapp.tasks:app<span class="w">                      </span><span class="c1"># 20 most recent</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>aioq<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>myapp.tasks:app<span class="w"> </span>-s<span class="w"> </span>failed<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span><span class="w">      </span><span class="c1"># 50 most recent failures</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>aioq<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>myapp.tasks:app<span class="w"> </span>-q<span class="w"> </span>emails<span class="w">            </span><span class="c1"># one queue</span>
 </code></pre></div>
-<h2 id="error-handling">Error handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<p>Cron task failures are logged but do not affect the worker's main loop:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>2026-01-01 09:00:01 ERROR aioq.worker: Cron task myapp.tasks.send_daily_report failed: connection refused
+<h3 id="aioq-show"><code>aioq show</code><a class="headerlink" href="#aioq-show" title="Permanent link">&para;</a></h3>
+<p>Every field of one job.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>aioq<span class="w"> </span>show<span class="w"> </span>myapp.tasks:app<span class="w"> </span>7f3c1a9e-4b21-4c8e-9f10-2a5d6e8b1c03
 </code></pre></div>
-<p>The next scheduled run will still fire normally.</p>
+<h2 id="mutations">Mutations<a class="headerlink" href="#mutations" title="Permanent link">&para;</a></h2>
+<h3 id="aioq-retry"><code>aioq retry</code><a class="headerlink" href="#aioq-retry" title="Permanent link">&para;</a></h3>
+<p>Re-enqueues a <code>failed</code> or <code>cancelled</code> job, or replays a <code>dead</code> one — it picks the
+right operation for the job's current status.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>aioq<span class="w"> </span>retry<span class="w"> </span>myapp.tasks:app<span class="w"> </span>&lt;job-id&gt;
+</code></pre></div>
+<h3 id="aioq-cancel"><code>aioq cancel</code><a class="headerlink" href="#aioq-cancel" title="Permanent link">&para;</a></h3>
+<p>Cancels a job that has not started yet (<code>pending</code>, <code>waiting</code> or <code>retrying</code>). A
+job already running cannot be cancelled.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>aioq<span class="w"> </span>cancel<span class="w"> </span>myapp.tasks:app<span class="w"> </span>&lt;job-id&gt;
+</code></pre></div>
+<h3 id="aioq-purge"><code>aioq purge</code><a class="headerlink" href="#aioq-purge" title="Permanent link">&para;</a></h3>
+<p>Deletes finished job records. Prompts unless you pass <code>--yes</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>aioq<span class="w"> </span>purge<span class="w"> </span>myapp.tasks:app<span class="w">                              </span><span class="c1"># finished &gt; 1 day ago</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>aioq<span class="w"> </span>purge<span class="w"> </span>myapp.tasks:app<span class="w"> </span>--older-than<span class="w"> </span><span class="m">604800</span><span class="w"> </span>--yes<span class="w">    </span><span class="c1"># finished &gt; 1 week ago</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>aioq<span class="w"> </span>purge<span class="w"> </span>myapp.tasks:app<span class="w"> </span>-s<span class="w"> </span>failed<span class="w"> </span>-s<span class="w"> </span>cancelled<span class="w"> </span>--yes<span class="w"> </span><span class="c1"># only these statuses</span>
+</code></pre></div>
+<p><code>--older-than</code> is in seconds and compares against <code>completed_at</code> (falling back to
+<code>enqueued_at</code>). Only terminal statuses — <code>completed</code>, <code>failed</code>, <code>cancelled</code>,
+<code>dead</code> — are ever eligible, so a purge can never delete queued work.</p>
+<p>Worth running on a schedule: the SQL backends keep every row until told
+otherwise, and Redis only expires jobs that saved a result.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Or from inside your app, e.g. as a cron task:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 4 * * *&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">nightly_purge</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">removed</span> <span class="o">=</span> <span class="k">await</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">older_than</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">86400</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;purged </span><span class="si">%d</span><span class="s2"> job records&quot;</span><span class="p">,</span> <span class="n">removed</span><span class="p">)</span>
+</code></pre></div>
 
 
 
@@ -1572,7 +1694,7 @@ function if you want that visibility — and the retries and DLQ that come with 
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../workers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Running Workers">
+          <a href="../monitoring/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitoring">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1582,20 +1704,20 @@ function if you want that visibility — and the retries and DLQ that come with 
                 Previous
               </span>
               <div class="md-ellipsis">
-                Running Workers
+                Monitoring
               </div>
             </div>
           </a>
         
         
           
-          <a href="../hooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Lifecycle Hooks">
+          <a href="../../backends/redis/" class="md-footer__link md-footer__link--next" aria-label="Next: Redis">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Lifecycle Hooks
+                Redis
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../aarq/" class="md-tabs__link">
+        <a href="../aioq/" class="md-tabs__link">
           
   
   
@@ -678,6 +678,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -686,6 +714,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -773,6 +857,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -941,14 +1053,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../aarq/" class="md-nav__link">
+      <a href="../aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1196,6 +1308,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#await-brokerenqueue_manyjobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.enqueue_many(jobs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#await-brokercancel_jobjob_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1211,6 +1334,50 @@
     <span class="md-ellipsis">
       
         await broker.retry_job(job_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerlist_dead_jobsqueuenone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.list_dead_jobs(queue=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerreplay_dead_jobjob_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.replay_dead_job(job_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerpurgeolder_than-statusesnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.purge(older_than, statuses=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokeracquire_cron_lockkey-ttl60" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.acquire_cron_lock(key, ttl=60)
       
     </span>
   </a>
@@ -1263,6 +1430,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementing a backend
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1448,6 +1626,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#await-brokerenqueue_manyjobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.enqueue_many(jobs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#await-brokercancel_jobjob_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1463,6 +1652,50 @@
     <span class="md-ellipsis">
       
         await broker.retry_job(job_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerlist_dead_jobsqueuenone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.list_dead_jobs(queue=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerreplay_dead_jobjob_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.replay_dead_job(job_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokerpurgeolder_than-statusesnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.purge(older_than, statuses=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#await-brokeracquire_cron_lockkey-ttl60" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        await broker.acquire_cron_lock(key, ttl=60)
       
     </span>
   </a>
@@ -1515,6 +1748,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementing a backend
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1579,14 +1823,39 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">queue_stats</span><span class="p">()</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># {&quot;default&quot;: {&quot;pending&quot;: 3, &quot;running&quot;: 1}, &quot;email&quot;: {&quot;completed&quot;: 42}}</span>
 </code></pre></div>
+<h3 id="await-brokerenqueue_manyjobs"><code>await broker.enqueue_many(jobs)</code><a class="headerlink" href="#await-brokerenqueue_manyjobs" title="Permanent link">&para;</a></h3>
+<p>Persist and publish several jobs. Backends that can batch do so in one
+round-trip; the default implementation loops over <code>enqueue()</code>.</p>
 <h3 id="await-brokercancel_jobjob_id"><code>await broker.cancel_job(job_id)</code><a class="headerlink" href="#await-brokercancel_jobjob_id" title="Permanent link">&para;</a></h3>
-<p>Cancel a <code>pending</code> or <code>retrying</code> job. Returns <code>True</code> if cancelled, <code>False</code> otherwise.</p>
+<p>Cancel a <code>pending</code>, <code>waiting</code> or <code>retrying</code> job. Returns <code>True</code> if cancelled,
+<code>False</code> otherwise — a running job cannot be cancelled.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">ok</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">cancel_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="await-brokerretry_jobjob_id"><code>await broker.retry_job(job_id)</code><a class="headerlink" href="#await-brokerretry_jobjob_id" title="Permanent link">&para;</a></h3>
 <p>Reset a <code>failed</code> or <code>cancelled</code> job to <code>pending</code> and re-enqueue it. Returns <code>True</code> if retried.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">ok</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">retry_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="await-brokerlist_dead_jobsqueuenone"><code>await broker.list_dead_jobs(queue=None)</code><a class="headerlink" href="#await-brokerlist_dead_jobsqueuenone" title="Permanent link">&para;</a></h3>
+<p>Return every job with status <code>dead</code>, optionally restricted to one DLQ.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">dead</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">list_dead_jobs</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s2">&quot;emails-dlq&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="await-brokerreplay_dead_jobjob_id"><code>await broker.replay_dead_job(job_id)</code><a class="headerlink" href="#await-brokerreplay_dead_jobjob_id" title="Permanent link">&para;</a></h3>
+<p>Reset a <code>dead</code> job to <code>pending</code> with its retry count cleared and re-enqueue it.
+Returns <code>True</code> if replayed.</p>
+<h3 id="await-brokerpurgeolder_than-statusesnone"><code>await broker.purge(older_than, statuses=None)</code><a class="headerlink" href="#await-brokerpurgeolder_than-statusesnone" title="Permanent link">&para;</a></h3>
+<p>Delete finished job records older than <code>older_than</code> seconds, comparing against
+<code>completed_at</code> (falling back to <code>enqueued_at</code>). Returns how many were removed.</p>
+<p><code>statuses</code> defaults to every terminal status, so a purge can never remove queued
+work.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">removed</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">older_than</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">86400</span><span class="p">)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">removed</span> <span class="o">=</span> <span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">older_than</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">statuses</span><span class="o">=</span><span class="p">[</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">failed</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="await-brokeracquire_cron_lockkey-ttl60"><code>await broker.acquire_cron_lock(key, ttl=60)</code><a class="headerlink" href="#await-brokeracquire_cron_lockkey-ttl60" title="Permanent link">&para;</a></h3>
+<p>Claim one cron occurrence for the whole fleet. Returns <code>True</code> for exactly one
+caller per <code>key</code>; everyone else gets <code>False</code> and skips that occurrence.</p>
+<p>Every bundled broker implements this. A custom broker that does not override it
+inherits a default that always returns <code>True</code> — correct with a single worker
+only, and it logs a warning.</p>
 <h3 id="await-brokerregister_workerworker_id-queues"><code>await broker.register_worker(worker_id, queues)</code><a class="headerlink" href="#await-brokerregister_workerworker_id-queues" title="Permanent link">&para;</a></h3>
 <p>Register a worker. Called by <code>Worker.run()</code> on startup.</p>
 <h3 id="await-brokerheartbeat_workerworker_id"><code>await broker.heartbeat_worker(worker_id)</code><a class="headerlink" href="#await-brokerheartbeat_workerworker_id" title="Permanent link">&para;</a></h3>
@@ -1631,6 +1900,35 @@
 </tr>
 </tbody>
 </table>
+<h2 id="implementing-a-backend">Implementing a backend<a class="headerlink" href="#implementing-a-backend" title="Permanent link">&para;</a></h2>
+<p><code>SQLBroker</code> (<code>aioq.backends.sql</code>) sits between <code>BaseBroker</code> and the two SQL
+backends and carries the dialect-independent parts: <code>build_filters()</code>,
+<code>row_to_job()</code>, <code>worker_row_to_dict()</code>, the JSON-column parsers and the
+dependency-resolution algorithm. Subclass it rather than <code>BaseBroker</code> if your
+backend is a relational table, and implement the three dialect hooks:</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_fetch_waiting_dependents(job_id)</code></td>
+<td>Waiting jobs that may depend on <code>job_id</code></td>
+</tr>
+<tr>
+<td><code>_count_completed(dep_ids)</code></td>
+<td>How many of those ids are completed</td>
+</tr>
+<tr>
+<td><code>_mark_waiting_as_pending(job_id)</code></td>
+<td>Flip a waiting job to pending</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../backends/custom/">Custom Backend</a> for a full walkthrough.</p>
 
 
 

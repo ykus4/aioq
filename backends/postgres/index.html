@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://ykus4.github.io/aioq/backends/postgres/">
       
       
-        <link rel="prev" href="../redis/">
+        <link rel="prev" href="../memory/">
       
       
         <link rel="next" href="../mysql/">
@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -678,6 +678,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -686,6 +714,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -778,6 +862,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -919,6 +1031,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#aioq_cron_locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq_cron_locks
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -951,6 +1074,17 @@
     <span class="md-ellipsis">
       
         Durability
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retention
       
     </span>
   </a>
@@ -1099,14 +1233,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1327,6 +1461,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#aioq_cron_locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aioq_cron_locks
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1359,6 +1504,17 @@
     <span class="md-ellipsis">
       
         Durability
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retention
       
     </span>
   </a>
@@ -1494,6 +1650,21 @@
 <td>Seconds between retries</td>
 </tr>
 <tr>
+<td><code>retry_backoff</code></td>
+<td><code>BOOLEAN</code></td>
+<td>Grow the retry delay exponentially</td>
+</tr>
+<tr>
+<td><code>retry_backoff_max</code></td>
+<td><code>FLOAT</code></td>
+<td>Cap on the exponential delay</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>FLOAT</code></td>
+<td>Execution timeout in seconds</td>
+</tr>
+<tr>
 <td><code>enqueued_at</code></td>
 <td><code>TIMESTAMPTZ</code></td>
 <td>Enqueue time</td>
@@ -1519,6 +1690,11 @@
 <td>Return value (if <code>save_result=True</code>)</td>
 </tr>
 <tr>
+<td><code>result_ttl</code></td>
+<td><code>INT</code></td>
+<td>Seconds to keep a saved result</td>
+</tr>
+<tr>
 <td><code>error</code></td>
 <td><code>TEXT</code></td>
 <td>Exception message</td>
@@ -1529,13 +1705,30 @@
 <td>Worker UUID</td>
 </tr>
 <tr>
+<td><code>priority</code></td>
+<td><code>INT</code></td>
+<td>Dequeue priority</td>
+</tr>
+<tr>
 <td><code>save_result</code></td>
 <td><code>BOOLEAN</code></td>
 <td>Whether to persist result</td>
 </tr>
+<tr>
+<td><code>dead_letter_queue</code></td>
+<td><code>TEXT</code></td>
+<td>DLQ for exhausted retries</td>
+</tr>
+<tr>
+<td><code>depends_on</code></td>
+<td><code>JSONB</code></td>
+<td>Job IDs this job waits on</td>
+</tr>
 </tbody>
 </table>
-<p>Indexes: <code>(queue, status)</code>, <code>(run_at) WHERE run_at IS NOT NULL</code></p>
+<p>Indexes: <code>(queue, status)</code>, <code>(run_at) WHERE run_at IS NOT NULL</code>,
+<code>(queue, priority DESC, enqueued_at) WHERE status IN ('pending','retrying')</code>,
+and a GIN index on <code>depends_on</code>.</p>
 <h3 id="aioq_workers"><code>aioq_workers</code><a class="headerlink" href="#aioq_workers" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1568,31 +1761,80 @@
 </tr>
 </tbody>
 </table>
+<h3 id="aioq_cron_locks"><code>aioq_cron_locks</code><a class="headerlink" href="#aioq_cron_locks" title="Permanent link">&para;</a></h3>
+<p>Holds one row per claimed cron occurrence, which is what stops two workers
+running the same occurrence.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lock_key</code></td>
+<td><code>TEXT</code></td>
+<td><code>{cron name}@{occurrence timestamp}</code> (primary key)</td>
+</tr>
+<tr>
+<td><code>acquired_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>When the lock was taken</td>
+</tr>
+<tr>
+<td><code>expires_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>After this, another worker may steal it</td>
+</tr>
+</tbody>
+</table>
+<p>Expired rows are cleaned up by <code>broker.purge()</code> / <code>aioq purge</code>.</p>
 <h2 id="dequeue-with-skip-locked">Dequeue with SKIP LOCKED<a class="headerlink" href="#dequeue-with-skip-locked" title="Permanent link">&para;</a></h2>
 <p><code>PostgresBroker.dequeue()</code> uses <code>SELECT ... FOR UPDATE SKIP LOCKED</code> to ensure that concurrent workers never pick the same job:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">UPDATE</span><span class="w"> </span><span class="n">aioq_jobs</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">SET</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;running&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">started_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">aioq_jobs</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">ANY</span><span class="p">(</span><span class="err">$</span><span class="mi">1</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pending&#39;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">ANY</span><span class="p">(</span><span class="err">$</span><span class="mi">1</span><span class="p">::</span><span class="nb">text</span><span class="p">[])</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">ANY</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">::</span><span class="nb">text</span><span class="p">[])</span><span class="w">          </span><span class="c1">-- &#39;pending&#39; or &#39;retrying&#39;</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="p">(</span><span class="n">run_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="n">run_at</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">now</span><span class="p">())</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">enqueued_at</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="k">DESC</span><span class="p">,</span><span class="w"> </span><span class="n">enqueued_at</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="w"> </span><span class="n">SKIP</span><span class="w"> </span><span class="n">LOCKED</span>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">1</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
 <a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">RETURNING</span><span class="w"> </span><span class="o">*</span>
 </code></pre></div>
+<p><code>retrying</code> is claimable because a retry is the same row rescheduled via <code>run_at</code>,
+not a new job.</p>
 <p>This approach is deadlock-free and requires no external locking mechanism.</p>
 <h2 id="deferred-jobs">Deferred jobs<a class="headerlink" href="#deferred-jobs" title="Permanent link">&para;</a></h2>
 <p>Deferred jobs are stored with a <code>run_at</code> timestamp. The <code>SKIP LOCKED</code> query filters them out until <code>now() &gt;= run_at</code>, so no separate promotion step is needed.</p>
 <h2 id="durability">Durability<a class="headerlink" href="#durability" title="Permanent link">&para;</a></h2>
 <p>PostgreSQL provides full ACID guarantees. Jobs are never lost, even if the worker or database restarts mid-execution. A job that was set to <code>running</code> when the worker crashed will remain in <code>running</code> state — you can detect stale running jobs by checking <code>started_at</code> age.</p>
-<h2 id="migrations">Migrations<a class="headerlink" href="#migrations" title="Permanent link">&para;</a></h2>
-<p>If you update aioq and new columns are added, the <code>CREATE TABLE IF NOT EXISTS</code> DDL will not add them automatically. Re-run the init SQL or write a migration:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">-- Example: add a new column</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">aioq_jobs</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<h2 id="retention">Retention<a class="headerlink" href="#retention" title="Permanent link">&para;</a></h2>
+<p>Nothing is deleted automatically — finished rows accumulate until you remove
+them. Run a purge on a schedule:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>aioq<span class="w"> </span>purge<span class="w"> </span>myapp.tasks:app<span class="w"> </span>--older-than<span class="w"> </span><span class="m">604800</span><span class="w"> </span>--yes
 </code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 4 * * *&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">nightly_purge</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">older_than</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">86400</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="migrations">Migrations<a class="headerlink" href="#migrations" title="Permanent link">&para;</a></h2>
+<p><code>connect()</code> applies its own schema upgrades: it runs <code>CREATE TABLE IF NOT
+EXISTS</code>, then <code>ALTER TABLE ... ADD COLUMN IF NOT EXISTS</code> for every column added
+in a later aioq release. Upgrading the package is enough — no manual migration
+step.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>That means the connecting role needs <code>ALTER</code> on <code>aioq_jobs</code> the first time it
+runs after an upgrade. If your production role cannot alter tables, apply the
+DDL from <code>aioq/backends/postgres.py</code> (<code>_INIT_SQL</code>) yourself. Reading a table
+whose migrations have not run still works — missing columns fall back to the
+model defaults.</p>
+</div>
 
 
 
@@ -1628,7 +1870,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../redis/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Redis">
+          <a href="../memory/" class="md-footer__link md-footer__link--prev" aria-label="Previous: In-Memory">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1638,7 +1880,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Redis
+                In-Memory
               </div>
             </div>
           </a>

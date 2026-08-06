@@ -13,10 +13,10 @@
         <link rel="canonical" href="https://ykus4.github.io/aioq/guide/dashboard/">
       
       
-        <link rel="prev" href="../cron/">
+        <link rel="prev" href="../hooks/">
       
       
-        <link rel="next" href="../../backends/redis/">
+        <link rel="next" href="../monitoring/">
       
       
         
@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -680,6 +680,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -873,6 +901,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -947,6 +1031,34 @@
     
   
     Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
   
 
     
@@ -1110,14 +1222,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1421,8 +1533,8 @@
 <h1 id="dashboard">Dashboard<a class="headerlink" href="#dashboard" title="Permanent link">&para;</a></h1>
 <p>aioq ships with a FastAPI-based dashboard that provides real-time visibility into your queues, workers, and jobs.</p>
 <h2 id="enabling-and-disabling">Enabling and disabling<a class="headerlink" href="#enabling-and-disabling" title="Permanent link">&para;</a></h2>
-<p>The dashboard is enabled by default. Set <code>dashboard_enabled=False</code> on the <code>Aarq</code> instance to disable it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aarq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">broker</span><span class="p">,</span> <span class="n">dashboard_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p>The dashboard is enabled by default. Set <code>dashboard_enabled=False</code> on the <code>Aioq</code> instance to disable it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">broker</span><span class="p">,</span> <span class="n">dashboard_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 <p>When disabled, <code>aioq dashboard tasks:app</code> exits with an error and <code>create_dashboard(app)</code> raises <code>RuntimeError</code>. This is useful for production deployments where you want to expose the dashboard selectively.</p>
 <h2 id="standalone-mode">Standalone mode<a class="headerlink" href="#standalone-mode" title="Permanent link">&para;</a></h2>
@@ -1537,6 +1649,10 @@
 <td>Wall-clock execution time</td>
 </tr>
 <tr>
+<td>Timeout</td>
+<td>Configured execution timeout (if any)</td>
+</tr>
+<tr>
 <td>Scheduled</td>
 <td><code>run_at</code> for deferred jobs</td>
 </tr>
@@ -1589,6 +1705,11 @@
 <td>Single job detail</td>
 </tr>
 <tr>
+<td><code>GET</code></td>
+<td><code>/api/dead</code></td>
+<td>Every dead job, optionally filtered by <code>queue</code></td>
+</tr>
+<tr>
 <td><code>POST</code></td>
 <td><code>/api/jobs/{id}/cancel</code></td>
 <td>Cancel a pending/retrying/waiting job</td>
@@ -1603,8 +1724,15 @@
 <td><code>/api/jobs/{id}/replay</code></td>
 <td>Replay a dead (DLQ-exhausted) job</td>
 </tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/healthz</code></td>
+<td>Liveness probe — 200 if the broker is reachable, else 503</td>
+</tr>
 </tbody>
 </table>
+<p>An unknown <code>?status=</code> value returns <code>400</code>; a mutating endpoint returns <code>409</code> when
+the job is not in a state that allows it.</p>
 <h3 id="sse-endpoint">SSE endpoint<a class="headerlink" href="#sse-endpoint" title="Permanent link">&para;</a></h3>
 <p><code>GET /sse/stats</code> streams stats and worker info as Server-Sent Events every 2 seconds:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="err">da</span><span class="kc">ta</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;pending&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;running&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">}},</span><span class="w"> </span><span class="nt">&quot;workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]}</span>
@@ -1636,6 +1764,12 @@
 <td>—</td>
 <td>Total registered worker count</td>
 </tr>
+<tr>
+<td><code>aioq_workers_alive</code></td>
+<td>Gauge</td>
+<td>—</td>
+<td>Workers that heartbeated recently</td>
+</tr>
 </tbody>
 </table>
 <p>Configure Prometheus to scrape the dashboard:</p>
@@ -1644,6 +1778,9 @@
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;localhost:8080&quot;</span><span class="p p-Indicator">]</span>
 </code></pre></div>
+<p>These are queue-level gauges read from the broker, so one dashboard covers the
+whole cluster. Per-job counters and duration histograms live in the workers —
+see <a href="../monitoring/">Monitoring</a>.</p>
 
 
 
@@ -1679,7 +1816,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../cron/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cron Scheduling">
+          <a href="../hooks/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lifecycle Hooks">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1689,20 +1826,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Cron Scheduling
+                Lifecycle Hooks
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../backends/redis/" class="md-footer__link md-footer__link--next" aria-label="Next: Redis">
+          <a href="../monitoring/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitoring">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Redis
+                Monitoring
               </div>
             </div>
             <div class="md-footer__button md-icon">

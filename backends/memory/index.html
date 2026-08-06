@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://ykus4.github.io/aioq/guide/cron/">
+        <link rel="canonical" href="https://ykus4.github.io/aioq/backends/memory/">
       
       
-        <link rel="prev" href="../workers/">
+        <link rel="prev" href="../redis/">
       
       
-        <link rel="next" href="../hooks/">
+        <link rel="next" href="../postgres/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Cron Scheduling - aioq</title>
+        <title>In-Memory - aioq</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cron-scheduling" class="md-skip">
+        <a href="#memorybroker" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cron Scheduling
+              In-Memory
             
           </span>
         </div>
@@ -262,13 +262,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../tasks/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../guide/tasks/" class="md-tabs__link">
           
   
   
@@ -284,11 +282,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../backends/redis/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../redis/" class="md-tabs__link">
           
   
   
@@ -511,31 +511,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -553,7 +548,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -571,7 +566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tasks/" class="md-nav__link">
+      <a href="../../guide/tasks/" class="md-nav__link">
         
   
   
@@ -599,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../enqueueing/" class="md-nav__link">
+      <a href="../../guide/enqueueing/" class="md-nav__link">
         
   
   
@@ -627,7 +622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workers/" class="md-nav__link">
+      <a href="../../guide/workers/" class="md-nav__link">
         
   
   
@@ -635,6 +630,238 @@
     
   
     Running Workers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cron/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Backends
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
   
 
     
@@ -671,7 +898,7 @@
   <span class="md-ellipsis">
     
   
-    Cron Scheduling
+    In-Memory
   
 
     
@@ -689,7 +916,7 @@
   <span class="md-ellipsis">
     
   
-    Cron Scheduling
+    In-Memory
   
 
     
@@ -715,10 +942,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#what-it-is-for" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        What it is for
       
     </span>
   </a>
@@ -726,10 +953,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-cron-tasks" class="md-nav__link">
+  <a href="#what-it-is-not-for" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Defining cron tasks
+        What it is not for
       
     </span>
   </a>
@@ -737,10 +964,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cron-expression-syntax" class="md-nav__link">
+  <a href="#feature-parity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cron expression syntax
+        Feature parity
       
     </span>
   </a>
@@ -748,32 +975,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ctx-in-cron-tasks" class="md-nav__link">
+  <a href="#testing-with-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ctx in cron tasks
+        Testing with it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing with it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resetting-between-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resetting between tests
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#running-everything-in-one-process" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error handling
+        Running everything in one process
       
     </span>
   </a>
@@ -796,234 +1029,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../hooks/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Lifecycle Hooks
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dashboard/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Dashboard
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../monitoring/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Monitoring
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Backends
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Backends
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../backends/redis/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Redis
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../backends/memory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    In-Memory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../backends/postgres/" class="md-nav__link">
+      <a href="../postgres/" class="md-nav__link">
         
   
   
@@ -1051,7 +1057,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../backends/mysql/" class="md-nav__link">
+      <a href="../mysql/" class="md-nav__link">
         
   
   
@@ -1079,7 +1085,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../backends/custom/" class="md-nav__link">
+      <a href="../custom/" class="md-nav__link">
         
   
   
@@ -1333,10 +1339,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#what-it-is-for" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        What it is for
       
     </span>
   </a>
@@ -1344,10 +1350,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-cron-tasks" class="md-nav__link">
+  <a href="#what-it-is-not-for" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Defining cron tasks
+        What it is not for
       
     </span>
   </a>
@@ -1355,10 +1361,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cron-expression-syntax" class="md-nav__link">
+  <a href="#feature-parity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cron expression syntax
+        Feature parity
       
     </span>
   </a>
@@ -1366,32 +1372,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ctx-in-cron-tasks" class="md-nav__link">
+  <a href="#testing-with-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ctx in cron tasks
+        Testing with it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing with it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resetting-between-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resetting between tests
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#running-everything-in-one-process" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error handling
+        Running everything in one process
       
     </span>
   </a>
@@ -1418,125 +1430,92 @@
   
 
 
-<h1 id="cron-scheduling">Cron Scheduling<a class="headerlink" href="#cron-scheduling" title="Permanent link">&para;</a></h1>
-<p>aioq supports recurring tasks via standard cron expressions. Cron tasks are fired automatically by the worker — no separate scheduler process is needed.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>Cron requires the <code>croniter</code> package:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;aioq[cron]&quot;</span>
+<h1 id="memorybroker">MemoryBroker<a class="headerlink" href="#memorybroker" title="Permanent link">&para;</a></h1>
+<p>An in-process broker. No server to install, nothing to clean up — everything
+lives in Python objects.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryBroker</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">MemoryBroker</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="defining-cron-tasks">Defining cron tasks<a class="headerlink" href="#defining-cron-tasks" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBroker</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">RedisBroker</span><span class="p">())</span>
+<p>It ships with aioq itself; there is no extra to install.</p>
+<h2 id="what-it-is-for">What it is for<a class="headerlink" href="#what-it-is-for" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Tests.</strong> Exercise the real worker, real retries and real dependency
+  resolution without a Redis container or database fixture.</li>
+<li><strong>Local development.</strong> Run tasks, the worker loop and the dashboard in one
+  process while you are still shaping your tasks.</li>
+<li><strong>Examples.</strong> Anything that should run with <code>python script.py</code> and no setup.</li>
+</ul>
+<h2 id="what-it-is-not-for">What it is not for<a class="headerlink" href="#what-it-is-not-for" title="Permanent link">&para;</a></h2>
+<p><strong>MemoryBroker is per-process.</strong> A worker started with <code>aioq worker</code> builds its
+own <code>MemoryBroker</code> and sees an empty queue — it cannot see jobs your web process
+enqueued. Use Redis or a SQL backend as soon as more than one process is
+involved.</p>
+<p>It also does not persist: restart the process and the queue is gone.</p>
+<h2 id="feature-parity">Feature parity<a class="headerlink" href="#feature-parity" title="Permanent link">&para;</a></h2>
+<p>It implements the full <code>BaseBroker</code> interface — priorities, deferred jobs, job
+dependencies, cancellation, dead letter queues, worker registration, cron locks
+and purging all behave the same as with the other backends. That is the point:
+what passes against MemoryBroker should pass against Redis.</p>
+<h2 id="testing-with-it">Testing with it<a class="headerlink" href="#testing-with-it" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aioq</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryBroker</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;*/5 * * * *&quot;</span><span class="p">)</span>             <span class="c1"># every 5 minutes</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cleanup_old_jobs</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="c1"># ... cleanup logic</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">():</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">MemoryBroker</span><span class="p">()</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">broker</span><span class="p">:</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">yield</span> <span class="n">Aioq</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="n">broker</span><span class="p">)</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;reports&quot;</span><span class="p">)</span>  <span class="c1"># weekdays at 9 AM</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_daily_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="c1"># ... report logic</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 0 1 * *&quot;</span><span class="p">)</span>               <span class="c1"># first day of every month</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">monthly_summary</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="c1"># ... summary logic</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_my_task</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">save_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">job</span> <span class="o">=</span> <span class="k">await</span> <span class="n">add</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="c1"># Claim and run exactly one job, like a worker tick.</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="n">claimed</span> <span class="o">=</span> <span class="k">await</span> <span class="n">app</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">dequeue</span><span class="p">([</span><span class="s2">&quot;default&quot;</span><span class="p">],</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="k">await</span> <span class="n">worker</span><span class="o">.</span><span class="n">_process</span><span class="p">(</span><span class="n">claimed</span><span class="p">)</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">assert</span> <span class="p">(</span><span class="k">await</span> <span class="n">app</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">id</span><span class="p">))</span><span class="o">.</span><span class="n">result</span> <span class="o">==</span> <span class="mi">5</span>
 </code></pre></div>
-<h2 id="cron-expression-syntax">Cron expression syntax<a class="headerlink" href="#cron-expression-syntax" title="Permanent link">&para;</a></h2>
-<p>Cron expressions follow the standard 5-field format:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌─────── minute      (0–59)
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│ ┌───── hour        (0–23)
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│ │ ┌─── day of month (1–31)
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│ │ │ ┌─ month       (1–12)
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│ │ │ │ ┌ day of week (0–7, 0 and 7 = Sunday)
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│ │ │ │ │
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>* * * * *
+<p>Driving one job at a time keeps tests deterministic. If you want the real loop,
+start it and stop it explicitly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="o">...</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">worker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">await</span> <span class="n">runner</span>  <span class="c1"># drains in-flight jobs, then returns</span>
 </code></pre></div>
-<p>Common examples:</p>
-<table>
-<thead>
-<tr>
-<th>Expression</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>* * * * *</code></td>
-<td>Every minute</td>
-</tr>
-<tr>
-<td><code>*/5 * * * *</code></td>
-<td>Every 5 minutes</td>
-</tr>
-<tr>
-<td><code>0 * * * *</code></td>
-<td>Every hour</td>
-</tr>
-<tr>
-<td><code>0 9 * * *</code></td>
-<td>Every day at 9 AM</td>
-</tr>
-<tr>
-<td><code>0 9 * * 1-5</code></td>
-<td>Weekdays at 9 AM</td>
-</tr>
-<tr>
-<td><code>0 0 * * 0</code></td>
-<td>Every Sunday at midnight</td>
-</tr>
-<tr>
-<td><code>0 0 1 * *</code></td>
-<td>First day of every month</td>
-</tr>
-</tbody>
-</table>
-<h2 id="ctx-in-cron-tasks"><code>ctx</code> in cron tasks<a class="headerlink" href="#ctx-in-cron-tasks" title="Permanent link">&para;</a></h2>
-<p>Cron tasks receive a context dict with <code>worker_id</code> and <code>broker</code>, but <strong>not</strong> <code>job_id</code> (cron tasks don't create <code>Job</code> records):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_cron</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">worker_id</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;worker_id&quot;</span><span class="p">]</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">broker</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;broker&quot;</span><span class="p">]</span>
+<h3 id="resetting-between-tests">Resetting between tests<a class="headerlink" href="#resetting-between-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span> <span class="n">broker</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>  <span class="c1"># drops jobs, workers and cron locks</span>
 </code></pre></div>
-<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>The worker runs a background loop that checks the schedule every second. When a cron task is due:</p>
-<ol>
-<li>The worker tries to claim that occurrence with a broker-held lock</li>
-<li>If it wins, the task is called in the worker's event loop as an <code>asyncio.Task</code></li>
-<li>If it loses, another worker is already running it, and this worker skips it</li>
-<li>The next run time is computed immediately after firing</li>
-</ol>
-<p>Every worker derives the same occurrence timestamps from the same cron
-expression, so they all compete for the same lock key — which is what makes an
-occurrence run <strong>exactly once across the whole fleet</strong>, however many workers are
-up. The lock is held for 60 seconds by default, comfortably longer than the
-one-second scheduler tick.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Safe to scale out: this sends one report, not one per worker.</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;reports&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_daily_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span> <span class="o">...</span>
+<h2 id="running-everything-in-one-process">Running everything in one process<a class="headerlink" href="#running-everything-in-one-process" title="Permanent link">&para;</a></h2>
+<p><code>MemoryBroker</code> is the one backend where the dashboard can serve an embedded
+worker's queue, because they share the object:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">uvicorn</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.dashboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_dashboard</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">aioq.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">myapp.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">server</span> <span class="o">=</span> <span class="n">uvicorn</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">uvicorn</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">create_dashboard</span><span class="p">(</span><span class="n">app</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">))</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">())</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Custom brokers</p>
-<p>All bundled brokers implement <code>acquire_cron_lock()</code>. A custom <code>BaseBroker</code>
-subclass that does not override it falls back to always granting the lock —
-correct with a single worker, but it logs a warning, because with several
-workers each one would fire the cron.</p>
-</div>
-<p>Cron tasks execute directly rather than creating <code>Job</code> records, so they do not
-appear in the dashboard's job list. Enqueue a regular task from inside the cron
-function if you want that visibility — and the retries and DLQ that come with it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">cron</span><span class="p">(</span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">schedule_report</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">await</span> <span class="n">build_report</span><span class="o">.</span><span class="n">enqueue</span><span class="p">()</span>  <span class="c1"># a normal task, fully tracked</span>
-</code></pre></div>
-<h2 id="error-handling">Error handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<p>Cron task failures are logged but do not affect the worker's main loop:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>2026-01-01 09:00:01 ERROR aioq.worker: Cron task myapp.tasks.send_daily_report failed: connection refused
-</code></pre></div>
-<p>The next scheduled run will still fire normally.</p>
 
 
 
@@ -1572,7 +1551,7 @@ function if you want that visibility — and the retries and DLQ that come with 
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../workers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Running Workers">
+          <a href="../redis/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Redis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1582,20 +1561,20 @@ function if you want that visibility — and the retries and DLQ that come with 
                 Previous
               </span>
               <div class="md-ellipsis">
-                Running Workers
+                Redis
               </div>
             </div>
           </a>
         
         
           
-          <a href="../hooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Lifecycle Hooks">
+          <a href="../postgres/" class="md-footer__link md-footer__link--next" aria-label="Next: PostgreSQL">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Lifecycle Hooks
+                PostgreSQL
               </div>
             </div>
             <div class="md-footer__button md-icon">

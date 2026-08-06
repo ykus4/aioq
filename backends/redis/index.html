@@ -13,10 +13,10 @@
         <link rel="canonical" href="https://ykus4.github.io/aioq/backends/redis/">
       
       
-        <link rel="prev" href="../../guide/dashboard/">
+        <link rel="prev" href="../../guide/cli/">
       
       
-        <link rel="next" href="../postgres/">
+        <link rel="next" href="../memory/">
       
       
         
@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/aarq/" class="md-tabs__link">
+        <a href="../../reference/aioq/" class="md-tabs__link">
           
   
   
@@ -678,6 +678,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guide/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guide/dashboard/" class="md-nav__link">
         
   
@@ -686,6 +714,62 @@
     
   
     Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
   
 
     
@@ -891,10 +975,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#result-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result expiry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#worker-ttl" class="md-nav__link">
     <span class="md-ellipsis">
       
         Worker TTL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cron-locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron locks
       
     </span>
   </a>
@@ -927,6 +1033,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1082,14 +1216,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/aarq/" class="md-nav__link">
+      <a href="../../reference/aioq/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Aarq
+    Aioq
   
 
     
@@ -1310,10 +1444,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#result-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result expiry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#worker-ttl" class="md-nav__link">
     <span class="md-ellipsis">
       
         Worker TTL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cron-locks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron locks
       
     </span>
   </a>
@@ -1408,12 +1564,12 @@
 <tr>
 <td><code>aioq:queue:{queue}:p{0\|5\|10}:pending</code></td>
 <td>List</td>
-<td>Active pending job IDs per priority tier (LPUSH / BRPOP)</td>
+<td>Runnable job IDs per priority tier (LPUSH / BRPOP)</td>
 </tr>
 <tr>
-<td><code>aioq:queue:{queue}:deferred</code></td>
+<td><code>aioq:queue:{queue}:p{0\|5\|10}:deferred</code></td>
 <td>Sorted Set</td>
-<td>Deferred job IDs (score = unix timestamp)</td>
+<td>Deferred job IDs per tier (score = <code>run_at</code>)</td>
 </tr>
 <tr>
 <td><code>aioq:job:{id}</code></td>
@@ -1436,6 +1592,11 @@
 <td>Job IDs by queue</td>
 </tr>
 <tr>
+<td><code>aioq:jobs:expiring</code></td>
+<td>Sorted Set</td>
+<td>Jobs whose saved result is due to expire</td>
+</tr>
+<tr>
 <td><code>aioq:job:{id}:dependents</code></td>
 <td>Set</td>
 <td>IDs of jobs waiting on this job to complete</td>
@@ -1445,17 +1606,48 @@
 <td>Hash</td>
 <td>Worker info keyed by worker ID</td>
 </tr>
+<tr>
+<td><code>aioq:cron:lock:{key}</code></td>
+<td>String</td>
+<td>One claimed cron occurrence (<code>SET NX EX</code>)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="priority-queues">Priority queues<a class="headerlink" href="#priority-queues" title="Permanent link">&para;</a></h2>
-<p>Each queue uses three separate lists for priority tiers: <code>p10</code> (high), <code>p5</code> (medium), <code>p0</code> (default). Workers call <code>BRPOP</code> on all three lists in highest-first order, so high-priority jobs are always consumed before lower-priority ones in the same queue.</p>
+<p>Each queue uses three separate lists for priority tiers: <code>p10</code> (high), <code>p5</code>
+(medium), <code>p0</code> (default). <code>RedisBroker</code> builds the <code>BRPOP</code> key list
+priority-major — every queue's <code>p10</code> list, then every queue's <code>p5</code>, then every
+<code>p0</code> — so an urgent job wins even when it sits in a queue named later in
+<code>--queue</code>.</p>
+<p>Priorities are snapped to the nearest tier: anything <code>&lt;= 0</code> is <code>p0</code>, <code>1–5</code> is
+<code>p5</code>, above <code>5</code> is <code>p10</code>.</p>
 <h2 id="deferred-jobs">Deferred jobs<a class="headerlink" href="#deferred-jobs" title="Permanent link">&para;</a></h2>
-<p>Deferred jobs are stored in <code>aioq:queue:{queue}:deferred</code> with a Unix timestamp as the sort score. On every <code>dequeue()</code> call the worker runs:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ZRANGEBYSCORE aioq:queue:{queue}:deferred -inf &lt;now&gt;
-</code></pre></div>
-<p>and moves due jobs to the pending list. This means deferred jobs are promoted lazily — they become runnable the next time a worker calls <code>dequeue()</code>.</p>
+<p>A deferred job goes into the sorted set for <strong>its own priority tier</strong>, scored by
+<code>run_at</code>. On every <code>dequeue()</code> call the worker promotes due jobs with a Lua
+script, moving each one to the pending list of the same tier, so a deferred
+high-priority job stays high-priority when it becomes runnable.</p>
+<p>The script is atomic and chunks its <code>ZREM</code>/<code>LPUSH</code> calls, so promoting a large
+batch cannot overflow Lua's stack.</p>
+<p>Promotion is lazy: a deferred job becomes runnable the next time some worker
+calls <code>dequeue()</code> on that queue.</p>
+<h2 id="result-expiry">Result expiry<a class="headerlink" href="#result-expiry" title="Permanent link">&para;</a></h2>
+<p>When a job with <code>save_result=True</code> completes, its record is given a TTL of
+<code>result_ttl</code> seconds and recorded in <code>aioq:jobs:expiring</code>. Once the record is
+gone, the next <code>list_jobs()</code>, <code>queue_stats()</code> or <code>purge()</code> call reaps its index
+entries, so expired jobs do not linger in the counts. Set <code>result_ttl=0</code> to keep
+records indefinitely.</p>
+<p>Jobs that do not save a result are never expired automatically — remove them with
+<code>broker.purge()</code> or <code>aioq purge</code>.</p>
 <h2 id="worker-ttl">Worker TTL<a class="headerlink" href="#worker-ttl" title="Permanent link">&para;</a></h2>
-<p>Workers are registered in a Redis Hash with a 30-second TTL check. The dashboard marks a worker as dead if its last heartbeat is older than 30 seconds. Workers send heartbeats every 10 seconds by default.</p>
+<p>Workers are registered in a Redis Hash and considered dead if their last
+heartbeat is older than 30 seconds; workers heartbeat every 10 seconds by
+default. Entries that have been silent for much longer (5 minutes) are dropped
+from the hash entirely, so a crashed worker does not sit in the dashboard
+forever.</p>
+<h2 id="cron-locks">Cron locks<a class="headerlink" href="#cron-locks" title="Permanent link">&para;</a></h2>
+<p>Each cron occurrence is claimed with <code>SET aioq:cron:lock:{name}@{timestamp} NX
+EX 60</code>. Exactly one worker gets the key, so an occurrence runs once across the
+fleet. The keys expire on their own.</p>
 <h2 id="persistence-and-eviction">Persistence and eviction<a class="headerlink" href="#persistence-and-eviction" title="Permanent link">&para;</a></h2>
 <p>By default Redis is an in-memory store. Configure <code>appendonly yes</code> in <code>redis.conf</code> for durability, or use a managed Redis service (ElastiCache, Redis Cloud, Upstash) with persistence enabled.</p>
 <div class="admonition warning">
@@ -1504,7 +1696,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../guide/dashboard/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dashboard">
+          <a href="../../guide/cli/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CLI">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1514,20 +1706,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Dashboard
+                CLI
               </div>
             </div>
           </a>
         
         
           
-          <a href="../postgres/" class="md-footer__link md-footer__link--next" aria-label="Next: PostgreSQL">
+          <a href="../memory/" class="md-footer__link md-footer__link--next" aria-label="Next: In-Memory">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                PostgreSQL
+                In-Memory
               </div>
             </div>
             <div class="md-footer__button md-icon">
