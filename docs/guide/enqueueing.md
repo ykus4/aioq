@@ -100,10 +100,12 @@ jobs = await send_email.enqueue_many([
 ])
 ```
 
-Supports `defer_by` and `priority` overrides:
+Every batch option applies to all the jobs it creates:
 
 ```python
 jobs = await process_record.enqueue_many(items, defer_by=30, priority=10)
+jobs = await process_record.enqueue_many(items, depends_on=[setup_job.id])
+jobs = await process_record.enqueue_many(items, defer_until=tomorrow_at_9am)
 ```
 
 ## Priority
@@ -138,7 +140,15 @@ Inspect and replay dead jobs:
 
 ```python
 dead_jobs = await broker.list_dead_jobs()
-replayed = await broker.replay_dead_job(job.id)  # re-enqueues as pending
+dead_jobs = await broker.list_dead_jobs(queue="dlq")   # one DLQ
+replayed = await broker.replay_dead_job(job.id)        # re-enqueues as pending
+```
+
+Or from the terminal:
+
+```bash
+aioq jobs myapp.tasks:app --status dead
+aioq retry myapp.tasks:app <job-id>
 ```
 
 ## Job dependencies
@@ -166,9 +176,13 @@ result_job = await merge_results.enqueue(depends_on=job_ids)
 
 ```
 pending ──► running ──► completed
+                    └──► retrying ──► pending (after the retry delay)
                     └──► failed ──► (retry) ──► pending
-                                └──► dead (DLQ) ──► (replay) ──► pending
-                                └──► (retry from UI/code) ──► pending
+                    └──► dead (DLQ) ──► (replay) ──► pending
 pending ──► cancelled ──► (retry from UI/code) ──► pending
 waiting ──► pending (when all dependencies complete) ──► running
 ```
+
+A retry is the *same job* rescheduled — it keeps its ID, and `retries` counts up
+across attempts. `retrying` therefore means "failed, waiting for its next
+attempt", not "currently running again".

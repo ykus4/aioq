@@ -2,31 +2,9 @@
 
 from __future__ import annotations
 
-import fakeredis.aioredis
-import pytest
-import redis.asyncio as aioredis
-
-from aioq.app import Aarq
-from aioq.backends.redis import RedisBroker
+from aioq import Aioq
 from aioq.models import Job, JobStatus
 from aioq.worker import Worker
-
-
-@pytest.fixture
-async def broker(monkeypatch):
-    """RedisBroker backed by fakeredis with Lua deferred-promotion stubbed out."""
-    fake = fakeredis.aioredis.FakeRedis(decode_responses=True)
-    monkeypatch.setattr(aioredis, "from_url", lambda *a, **kw: fake)
-
-    b = RedisBroker()
-    await b.connect()
-
-    async def _noop_promote(queue: str, now: float) -> None:
-        pass
-
-    monkeypatch.setattr(b, "_promote_deferred", _noop_promote)
-    yield b
-    await b.disconnect()
 
 
 async def test_dead_job_marked_dead(broker):
@@ -173,9 +151,11 @@ async def test_retry_dead_job_fails(broker):
 
 async def test_worker_moves_job_to_dlq_on_final_failure(broker, monkeypatch):
     """Worker marks a job dead and moves it to the DLQ after all retries fail."""
-    app = Aarq(broker)
+    app = Aioq(broker)
 
-    @app.task(queue="default", retries=1, dead_letter_queue="my-dlq")
+    # retry_delay=0 keeps the retry immediately runnable; a non-zero delay
+    # parks the job in the deferred set instead (see test_retry_is_deferred).
+    @app.task(queue="default", retries=1, retry_delay=0, dead_letter_queue="my-dlq")
     async def always_fails(ctx):
         raise ValueError("always fails")
 

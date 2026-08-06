@@ -19,9 +19,9 @@
 
 ```
 pending ──► running ──► completed
+                    └──► retrying ──► pending (after retry_delay)
                     └──► failed ──► (retry) ──► pending
-                                └──► dead (DLQ) ──► (replay) ──► pending
-                                └──► (retry from UI) ──► pending
+                    └──► dead (DLQ) ──► (replay) ──► pending
 pending ──► cancelled ──► (retry from UI) ──► pending
 waiting ──► pending (when all dependencies complete) ──► running
 ```
@@ -42,17 +42,48 @@ class Job(BaseModel):
     retries: int                  # Current retry count
     max_retries: int              # Max retry attempts
     retry_delay: float            # Seconds between retries
+    retry_backoff: bool           # Grow the retry delay exponentially
+    retry_backoff_max: float      # Cap on the exponential delay
+    timeout: float | None         # Execution timeout in seconds
     enqueued_at: datetime         # When the job was created
     started_at: datetime | None
     completed_at: datetime | None
     run_at: datetime | None       # Scheduled time (deferred jobs)
     result: Any                   # Return value (if save_result=True)
+    result_ttl: int               # Seconds to keep a saved result
     error: str | None             # Exception message
     worker_id: str | None         # Worker that executed the job
     save_result: bool             # Whether to persist result
     dead_letter_queue: str | None # DLQ queue name (if configured)
     depends_on: list[str]         # Job IDs this job depends on
 ```
+
+### Properties
+
+| Property | Type | Description |
+|---|---|---|
+| `is_terminal` | `bool` | True for `completed`, `failed`, `cancelled`, `dead` |
+| `duration` | `float \| None` | Seconds spent running, or `None` if unfinished |
+
+```python
+if job.is_terminal:
+    print(f"finished in {job.duration:.2f}s")
+```
+
+### Status sets
+
+`aioq.models` exports the status groups the brokers use, so you do not have to
+repeat the tuples:
+
+```python
+from aioq.models import CANCELLABLE_STATUSES, RETRIABLE_STATUSES, TERMINAL_STATUSES
+```
+
+| Name | Members |
+|---|---|
+| `TERMINAL_STATUSES` | `completed`, `failed`, `cancelled`, `dead` |
+| `CANCELLABLE_STATUSES` | `pending`, `retrying`, `waiting` |
+| `RETRIABLE_STATUSES` | `failed`, `cancelled` |
 
 ### `model_dump_json_safe()`
 

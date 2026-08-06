@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ..app import Aarq
+from ..app import Aioq
 from ..models import JobStatus
 
 try:
@@ -25,13 +25,29 @@ except ImportError:
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
 
+#: How often the SSE stream pushes fresh stats.
+_SSE_INTERVAL = 2.0
 
-def create_dashboard(app: Aarq) -> FastAPI:
+
+def _parse_status(status: str | None) -> JobStatus | None:
+    """Validate a ``?status=`` query value, 400-ing rather than 500-ing."""
+    if not status:
+        return None
+    try:
+        return JobStatus(status)
+    except ValueError as exc:
+        valid = ", ".join(s.value for s in JobStatus)
+        raise HTTPException(
+            status_code=400, detail=f"Unknown status {status!r}. Expected one of: {valid}"
+        ) from exc
+
+
+def create_dashboard(app: Aioq) -> FastAPI:
+    """Create and return a FastAPI app serving the aioq dashboard."""
     if not app.dashboard_enabled:
         raise RuntimeError(
-            "Dashboard is disabled for this Aarq instance (dashboard_enabled=False)."
+            "Dashboard is disabled for this Aioq instance (dashboard_enabled=False)."
         )
-    """Create and return a FastAPI app serving the aioq dashboard."""
 
     dashboard = FastAPI(title="aioq dashboard")
     templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
@@ -65,7 +81,7 @@ def create_dashboard(app: Aarq) -> FastAPI:
         per_page: int = 20,
     ):
         broker = app.broker
-        status_enum = JobStatus(status) if status else None
+        status_enum = _parse_status(status)
         jobs = await broker.list_jobs(
             queue=queue,
             status=status_enum,
@@ -90,6 +106,8 @@ def create_dashboard(app: Aarq) -> FastAPI:
     @dashboard.get("/jobs/{job_id}", response_class=HTMLResponse)
     async def job_detail(request: Request, job_id: str):
         job = await app.broker.get_job(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
         return templates.TemplateResponse(request, "job_detail.html", {"job": job})
 
     # ------------------------------------------------------------------
@@ -106,7 +124,7 @@ def create_dashboard(app: Aarq) -> FastAPI:
                 workers = await app.broker.list_workers()
                 payload = json.dumps({"stats": stats, "workers": workers})
                 yield f"data: {payload}\n\n"
-                await asyncio.sleep(2)
+                await asyncio.sleep(_SSE_INTERVAL)
 
         return StreamingResponse(
             event_generator(),
@@ -131,11 +149,24 @@ def create_dashboard(app: Aarq) -> FastAPI:
         limit: int = 20,
         offset: int = 0,
     ):
-        status_enum = JobStatus(status) if status else None
         jobs = await app.broker.list_jobs(
-            queue=queue, status=status_enum, limit=limit, offset=offset
+            queue=queue, status=_parse_status(status), limit=limit, offset=offset
         )
         return [j.model_dump_json_safe() for j in jobs]
+
+    @dashboard.get("/api/dead")
+    async def api_dead_jobs(queue: str | None = None):
+        jobs = await app.broker.list_dead_jobs(queue=queue)
+        return [j.model_dump_json_safe() for j in jobs]
+
+    @dashboard.get("/healthz")
+    async def healthz():
+        """Liveness probe: confirms the dashboard can reach the broker."""
+        try:
+            await app.broker.queue_stats()
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Broker unreachable: {exc}") from exc
+        return {"status": "ok"}
 
     @dashboard.get("/api/jobs/{job_id}")
     async def api_job(job_id: str):

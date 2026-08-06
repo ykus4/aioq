@@ -72,9 +72,15 @@ stats = await broker.queue_stats()
 # {"default": {"pending": 3, "running": 1}, "email": {"completed": 42}}
 ```
 
+### `await broker.enqueue_many(jobs)`
+
+Persist and publish several jobs. Backends that can batch do so in one
+round-trip; the default implementation loops over `enqueue()`.
+
 ### `await broker.cancel_job(job_id)`
 
-Cancel a `pending` or `retrying` job. Returns `True` if cancelled, `False` otherwise.
+Cancel a `pending`, `waiting` or `retrying` job. Returns `True` if cancelled,
+`False` otherwise — a running job cannot be cancelled.
 
 ```python
 ok = await broker.cancel_job(job_id)
@@ -87,6 +93,41 @@ Reset a `failed` or `cancelled` job to `pending` and re-enqueue it. Returns `Tru
 ```python
 ok = await broker.retry_job(job_id)
 ```
+
+### `await broker.list_dead_jobs(queue=None)`
+
+Return every job with status `dead`, optionally restricted to one DLQ.
+
+```python
+dead = await broker.list_dead_jobs(queue="emails-dlq")
+```
+
+### `await broker.replay_dead_job(job_id)`
+
+Reset a `dead` job to `pending` with its retry count cleared and re-enqueue it.
+Returns `True` if replayed.
+
+### `await broker.purge(older_than, statuses=None)`
+
+Delete finished job records older than `older_than` seconds, comparing against
+`completed_at` (falling back to `enqueued_at`). Returns how many were removed.
+
+`statuses` defaults to every terminal status, so a purge can never remove queued
+work.
+
+```python
+removed = await broker.purge(older_than=7 * 86400)
+removed = await broker.purge(older_than=3600, statuses=[JobStatus.failed])
+```
+
+### `await broker.acquire_cron_lock(key, ttl=60)`
+
+Claim one cron occurrence for the whole fleet. Returns `True` for exactly one
+caller per `key`; everyone else gets `False` and skips that occurrence.
+
+Every bundled broker implements this. A custom broker that does not override it
+inherits a default that always returns `True` — correct with a single worker
+only, and it logs a warning.
 
 ### `await broker.register_worker(worker_id, queues)`
 
@@ -111,3 +152,19 @@ Return a list of worker info dicts. Each dict includes:
 | `registered_at` | `str` | ISO 8601 timestamp |
 | `last_heartbeat` | `str` | ISO 8601 timestamp |
 | `alive` | `bool` | True if heartbeat is recent |
+
+## Implementing a backend
+
+`SQLBroker` (`aioq.backends.sql`) sits between `BaseBroker` and the two SQL
+backends and carries the dialect-independent parts: `build_filters()`,
+`row_to_job()`, `worker_row_to_dict()`, the JSON-column parsers and the
+dependency-resolution algorithm. Subclass it rather than `BaseBroker` if your
+backend is a relational table, and implement the three dialect hooks:
+
+| Hook | Purpose |
+|---|---|
+| `_fetch_waiting_dependents(job_id)` | Waiting jobs that may depend on `job_id` |
+| `_count_completed(dep_ids)` | How many of those ids are completed |
+| `_mark_waiting_as_pending(job_id)` | Flip a waiting job to pending |
+
+See [Custom Backend](../backends/custom.md) for a full walkthrough.

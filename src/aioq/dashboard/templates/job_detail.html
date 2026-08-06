@@ -100,11 +100,6 @@
 
   <div class="card">
     <div class="card-title">Timing</div>
-    {% if job.started_at and job.completed_at %}
-      {% set dur = (job.completed_at - job.started_at).total_seconds() %}
-    {% else %}
-      {% set dur = None %}
-    {% endif %}
     <dl style="display:grid; grid-template-columns:auto 1fr; gap:0.3rem 1rem; margin-top:0.5rem; align-items:baseline;">
       <dt style="color:var(--muted); font-size:0.8rem; white-space:nowrap;">Enqueued</dt>
       <dd style="font-size:0.82rem;">{{ job.enqueued_at.strftime("%Y-%m-%d %H:%M:%S") }}</dd>
@@ -115,9 +110,14 @@
       <dt style="color:var(--muted); font-size:0.8rem;">Completed</dt>
       <dd style="font-size:0.82rem;">{{ job.completed_at.strftime("%Y-%m-%d %H:%M:%S") if job.completed_at else "—" }}</dd>
 
-      {% if dur is not none %}
+      {% if job.duration is not none %}
       <dt style="color:var(--muted); font-size:0.8rem;">Duration</dt>
-      <dd style="font-size:0.82rem;">{{ "%.3f"|format(dur) }}s</dd>
+      <dd style="font-size:0.82rem;">{{ "%.3f"|format(job.duration) }}s</dd>
+      {% endif %}
+
+      {% if job.timeout %}
+      <dt style="color:var(--muted); font-size:0.8rem;">Timeout</dt>
+      <dd style="font-size:0.82rem;">{{ job.timeout }}s</dd>
       {% endif %}
 
       {% if job.run_at %}
@@ -127,7 +127,8 @@
 
       <dt style="color:var(--muted); font-size:0.8rem;">Retries</dt>
       <dd style="font-size:0.82rem;">
-        {{ job.retries }} / {{ job.max_retries }}
+        {{ job.retries }} / {{ job.max_retries }}{% if job.retry_backoff %}
+        <span style="color:var(--muted); font-size:0.75rem;">(backoff)</span>{% endif %}
         {% if job.max_retries > 0 %}
         <span style="margin-left:0.4rem;">
           {% for i in range(job.max_retries) %}

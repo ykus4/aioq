@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 import httpx
 from fastapi import FastAPI
 
-from aioq.app import Aarq
+from aioq import Aioq
 from aioq.dashboard.app import create_dashboard
 
 # ---------------------------------------------------------------------------
@@ -19,7 +19,7 @@ def _make_app(queue_stats: dict, workers: list[dict]) -> FastAPI:
     broker.queue_stats = AsyncMock(return_value=queue_stats)
     broker.list_workers = AsyncMock(return_value=workers)
 
-    aarq = Aarq(broker=broker)
+    aarq = Aioq(broker=broker)
     return create_dashboard(aarq)
 
 
@@ -102,7 +102,7 @@ async def test_metrics_broker_called_on_each_scrape():
     broker.queue_stats = AsyncMock(return_value={})
     broker.list_workers = AsyncMock(return_value=[])
 
-    aarq = Aarq(broker=broker)
+    aarq = Aioq(broker=broker)
     app = create_dashboard(aarq)
 
     async with httpx.AsyncClient(

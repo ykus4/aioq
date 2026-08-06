@@ -1,10 +1,19 @@
 # Custom Backend
 
-You can add support for any storage system by subclassing `BaseBroker` and implementing all abstract methods.
+You can add support for any storage system by subclassing `BaseBroker` and
+implementing all abstract methods.
+
+!!! tip
+    If your backend is a relational table, subclass
+    [`SQLBroker`](../reference/broker.md#implementing-a-backend) instead — it
+    already carries the row mapping, filter building and dependency-resolution
+    logic that `PostgresBroker` and `MySQLBroker` share.
 
 ## Implementation template
 
 ```python
+from collections.abc import Collection
+
 from aioq.backends.base import BaseBroker
 from aioq.models import Job, JobStatus
 
@@ -103,6 +112,26 @@ class MyBroker(BaseBroker):
         """Remove the worker on shutdown."""
         ...
 
+    async def purge(
+        self,
+        older_than: float,
+        statuses: Collection[JobStatus] | None = None,
+    ) -> int:
+        """Delete finished jobs older than `older_than` seconds.
+
+        `self._purge_cutoff()` and `self._purge_statuses()` on BaseBroker turn
+        the arguments into a datetime and a list of status strings for you.
+        """
+
+    async def acquire_cron_lock(self, key: str, ttl: float = 60) -> bool:
+        """Claim one cron occurrence fleet-wide.
+
+        Not abstract: the inherited default always returns True, which is only
+        correct with a single worker. Override it — with any atomic
+        create-if-absent primitive your store offers — before running more than
+        one worker, or every worker will fire every cron.
+        """
+
     async def list_workers(self) -> list[dict]:
         """
         Return a list of worker dicts. Each dict must include at minimum:
@@ -113,13 +142,13 @@ class MyBroker(BaseBroker):
 
 ## Registration
 
-Pass your broker to `Aarq` like any other:
+Pass your broker to `Aioq` like any other:
 
 ```python
-from aioq import Aarq
+from aioq import Aioq
 
 broker = MyBroker(...)
-app = Aarq(broker=broker)
+app = Aioq(broker=broker)
 ```
 
 ## Context manager support
