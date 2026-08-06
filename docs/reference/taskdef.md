@@ -52,6 +52,7 @@ job = await send_email.enqueue(to="a@b.com", defer_by=300)
 
 # Run at a specific time
 from datetime import datetime
+
 job = await send_email.enqueue(
     to="a@b.com",
     defer_until=datetime(2026, 6, 1, 9, 0),
@@ -64,10 +65,12 @@ Enqueue many calls in one broker round-trip. Each item is either a kwargs dict o
 a positional-args tuple; the two can be mixed. Returns the list of `Job` objects.
 
 ```python
-jobs = await send_email.enqueue_many([
-    {"to": "a@b.com"},
-    {"to": "c@d.com"},
-])
+jobs = await send_email.enqueue_many(
+    [
+        {"to": "a@b.com"},
+        {"to": "c@d.com"},
+    ]
+)
 
 jobs = await add.enqueue_many([(1, 2), (3, 4)])
 ```

@@ -65,7 +65,7 @@ equivalent of SIGTERM. Safe to call before `run()`, and safe to call twice.
 runner = asyncio.create_task(worker.run())
 ...
 worker.stop()
-await runner          # returns once in-flight jobs have drained
+await runner  # returns once in-flight jobs have drained
 ```
 
 Signal handlers are installed on a best-effort basis: where

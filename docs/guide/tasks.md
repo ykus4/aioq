@@ -60,9 +60,9 @@ Every task receives a context dict as its first argument:
 ```python
 async def my_task(ctx, arg1, arg2):
     worker_id = ctx["worker_id"]  # str — UUID of the executing worker
-    job_id    = ctx["job_id"]     # str — UUID of the current job
-    job       = ctx["job"]        # Job  — the full job record
-    broker    = ctx["broker"]     # BaseBroker — broker instance
+    job_id = ctx["job_id"]  # str — UUID of the current job
+    job = ctx["job"]  # Job  — the full job record
+    broker = ctx["broker"]  # BaseBroker — broker instance
 ```
 
 You can use `ctx["broker"]` to enqueue follow-up jobs from within a task:
@@ -130,8 +130,7 @@ struggling dependency and makes every job that failed together retry together.
 
 ```python
 @app.task(retries=5, retry_delay=2.0, retry_backoff=True, retry_backoff_max=300)
-async def call_rate_limited_api(ctx, url: str):
-    ...
+async def call_rate_limited_api(ctx, url: str): ...
 ```
 
 With `retry_delay=2.0`, the delay is drawn uniformly from `[0, 2]`, `[0, 4]`,
@@ -144,15 +143,14 @@ there with status `dead` rather than simply marked `failed`:
 
 ```python
 @app.task(retries=3, dead_letter_queue="emails-dlq")
-async def send_email(ctx, to: str):
-    ...
+async def send_email(ctx, to: str): ...
 ```
 
 Inspect and replay them:
 
 ```python
 dead = await broker.list_dead_jobs(queue="emails-dlq")
-await broker.replay_dead_job(dead[0].id)   # back to pending, retries reset
+await broker.replay_dead_job(dead[0].id)  # back to pending, retries reset
 ```
 
 The dashboard exposes the same thing via a **Replay** button, and the CLI via
@@ -187,6 +185,7 @@ The task name is derived automatically as `{module}.{qualname}`:
 # In module "myapp.tasks"
 @app.task()
 async def send_email(ctx, to: str): ...
+
 
 # task name: "myapp.tasks.send_email"
 print(send_email.name)

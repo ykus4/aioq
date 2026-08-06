@@ -58,6 +58,7 @@ its backoff holds no slot at all. All jobs run as `asyncio.Task` objects in the 
 ```python
 import asyncio
 
+
 @app.task(queue="cpu")
 async def heavy_compute(ctx, n: int) -> int:
     # Offload to a thread to avoid blocking the event loop

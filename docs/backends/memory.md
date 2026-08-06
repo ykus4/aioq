@@ -75,13 +75,13 @@ worker = Worker(app, concurrency=4)
 runner = asyncio.create_task(worker.run())
 ...
 worker.stop()
-await runner        # drains in-flight jobs, then returns
+await runner  # drains in-flight jobs, then returns
 ```
 
 ### Resetting between tests
 
 ```python
-await broker.clear()   # drops jobs, workers and cron locks
+await broker.clear()  # drops jobs, workers and cron locks
 ```
 
 ## Running everything in one process

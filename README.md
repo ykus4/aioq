@@ -22,9 +22,9 @@ from aioq.backends import RedisBroker
 
 app = Aioq(broker=RedisBroker(url="redis://localhost:6379"))
 
+
 @app.task(queue="default", retries=3, retry_backoff=True, timeout=30)
-async def my_task(ctx, value: int):
-    ...
+async def my_task(ctx, value: int): ...
 ```
 
 ```bash

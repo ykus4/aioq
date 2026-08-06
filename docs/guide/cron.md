@@ -68,7 +68,7 @@ Cron tasks receive a context dict with `worker_id` and `broker`, but **not** `jo
 ```python
 async def my_cron(ctx):
     worker_id = ctx["worker_id"]
-    broker    = ctx["broker"]
+    broker = ctx["broker"]
 ```
 
 ## How it works
@@ -89,8 +89,7 @@ one-second scheduler tick.
 ```python
 # Safe to scale out: this sends one report, not one per worker.
 @app.cron("0 9 * * 1-5", queue="reports")
-async def send_daily_report(ctx):
-    ...
+async def send_daily_report(ctx): ...
 ```
 
 !!! note "Custom brokers"
@@ -106,7 +105,7 @@ function if you want that visibility — and the retries and DLQ that come with 
 ```python
 @app.cron("0 9 * * 1-5")
 async def schedule_report(ctx):
-    await build_report.enqueue()      # a normal task, fully tracked
+    await build_report.enqueue()  # a normal task, fully tracked
 ```
 
 ## Error handling

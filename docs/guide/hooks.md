@@ -63,6 +63,7 @@ fail an otherwise-healthy job:
 async def broken(job):
     raise RuntimeError("my metrics backend is down")
 
+
 # The job still runs and still completes.
 ```
 

@@ -6,7 +6,7 @@ Once a task is defined, call `.enqueue()` on the decorated function to push a jo
 
 ```python
 job = await my_task.enqueue(arg1, arg2, kwarg=value)
-print(job.id)      # UUID string
+print(job.id)  # UUID string
 print(job.status)  # "pending"
 ```
 
@@ -54,6 +54,7 @@ async with broker:
 
     # Poll for completion
     import asyncio
+
     while True:
         job = await broker.get_job(job.id)
         if job.status in ("completed", "failed", "cancelled"):
@@ -83,21 +84,25 @@ retried = await broker.retry_job(job.id)
 Enqueue multiple calls to the same task in a single round-trip:
 
 ```python
-jobs = await process_record.enqueue_many([
-    {"record_id": 1},
-    {"record_id": 2},
-    {"record_id": 3},
-])
+jobs = await process_record.enqueue_many(
+    [
+        {"record_id": 1},
+        {"record_id": 2},
+        {"record_id": 3},
+    ]
+)
 print(len(jobs))  # 3
 ```
 
 Items can be dicts (kwargs) or tuples (positional args):
 
 ```python
-jobs = await send_email.enqueue_many([
-    ("user1@example.com", "Hello"),
-    ("user2@example.com", "Hello"),
-])
+jobs = await send_email.enqueue_many(
+    [
+        ("user1@example.com", "Hello"),
+        ("user2@example.com", "Hello"),
+    ]
+)
 ```
 
 Every batch option applies to all the jobs it creates:
@@ -116,8 +121,7 @@ Set priority at the task level:
 
 ```python
 @app.task(queue="default", priority=10)
-async def urgent_task(ctx, data):
-    ...
+async def urgent_task(ctx, data): ...
 ```
 
 Or per-enqueue:
@@ -132,16 +136,15 @@ When a job exhausts all retries it normally moves to `failed`. With a DLQ config
 
 ```python
 @app.task(queue="default", retries=3, dead_letter_queue="dlq")
-async def risky_task(ctx, data):
-    ...
+async def risky_task(ctx, data): ...
 ```
 
 Inspect and replay dead jobs:
 
 ```python
 dead_jobs = await broker.list_dead_jobs()
-dead_jobs = await broker.list_dead_jobs(queue="dlq")   # one DLQ
-replayed = await broker.replay_dead_job(job.id)        # re-enqueues as pending
+dead_jobs = await broker.list_dead_jobs(queue="dlq")  # one DLQ
+replayed = await broker.replay_dead_job(job.id)  # re-enqueues as pending
 ```
 
 Or from the terminal:

@@ -103,8 +103,8 @@ print(app.task_names)
 Copies of the task registry and cron list.
 
 ```python
-app.tasks   # {"myapp.tasks.send_email": TaskDef, ...}
-app.crons   # [CronDef, ...]
+app.tasks  # {"myapp.tasks.send_email": TaskDef, ...}
+app.crons  # [CronDef, ...]
 ```
 
 ## `app.broker`
